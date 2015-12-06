@@ -6,19 +6,18 @@ from scipy.special import gamma as scipy_gamma
 
 ## TODO: Find out whether there is a gamma function in numpy!
 
-
 from stingray import Powerspectrum, AveragedPowerspectrum
 from stingray.parametricmodels import logmin
 
 class Posterior(object):
 
     def __init__(self,x, y, model):
+<<<<<<< 0b14083a34926307498e943c930388754466bfae
         """
 
 
 
         """
-
 
         self.x = x
         self.y = y
@@ -117,7 +116,6 @@ class PSDPosterior(Posterior):
         self.ps = ps
         self.m = ps.m
         Posterior.__init__(self, ps.freq, ps.ps, model)
-
 
 
     def loglikelihood(self,t0, neg=False):
