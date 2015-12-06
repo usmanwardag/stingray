@@ -46,9 +46,6 @@ class TestParametricModel(object):
         name = 2
         p = ParametricModel(npar, name)
 
-
-
-
 class TestConstModel(object):
 
     def setUp(self):
