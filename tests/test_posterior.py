@@ -7,9 +7,7 @@ from stingray import Powerspectrum
 from stingray import Posterior, PSDPosterior
 from stingray import Const
 
-
 np.random.seed(20150907)
-
 
 
 class PosteriorClassDummy(Posterior):
@@ -97,7 +95,6 @@ class TestPSDPosterior(object):
         lpost = PSDPosterior(self.ps, self.model)
         lpost([2,3])
 
-
     def test_logprior(self):
         t0 = [2.0]
 
@@ -126,7 +123,6 @@ class TestPSDPosterior(object):
         loglike_test = lpost.loglikelihood(t0, neg=False)
 
         assert np.isclose(loglike_test, loglike, atol=1.e-10, rtol=1.e-10)
-
 
 
     def test_negative_loglikelihood(self):

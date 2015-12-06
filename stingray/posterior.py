@@ -12,7 +12,6 @@ from stingray.parametricmodels import logmin
 class Posterior(object):
 
     def __init__(self,x, y, model):
-<<<<<<< 0b14083a34926307498e943c930388754466bfae
         """
 
 
