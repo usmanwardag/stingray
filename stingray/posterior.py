@@ -217,13 +217,13 @@ class LightcurvePosterior(Posterior):
         if np.isnan(res):
             res = logmin
         elif res == np.inf or np.isfinite(res) == False:
+
             res = logmin
 
         if neg:
             return -res
         else:
             return res
-
 
 
 class GaussianPosterior(Posterior):
