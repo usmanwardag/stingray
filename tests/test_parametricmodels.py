@@ -101,6 +101,7 @@ class TestConstModel(object):
         self.const.set_prior(hyperpars)
         self.const.logprior(np.inf)
 
+
     @raises(AssertionError)
     def test_nan_pars_fails_prior(self):
         hyperpars =  {"a_mean":2.0, "a_var":0.2}
