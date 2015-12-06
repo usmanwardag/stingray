@@ -7,7 +7,6 @@ from stingray import Powerspectrum
 from stingray import Posterior, PSDPosterior
 from stingray import Const
 
-
 np.random.seed(20150907)
 
 
