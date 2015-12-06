@@ -10,7 +10,6 @@ from stingray import Const
 
 np.random.seed(20150907)
 
-
 class PosteriorClassDummy(Posterior):
     """
     This is a test class that tests the basic functionality of the
