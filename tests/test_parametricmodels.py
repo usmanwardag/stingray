@@ -285,7 +285,7 @@ class TestLorentzianModel(object):
             assert np.allclose(qpo_func(x, gamma, amplitude, x0),
                                self.lorentzian(x, x0, gamma, amplitude),
                                atol=1.e-10)
-
+    
     @raises(AssertionError)
     def test_func_fails_when_not_finite(self):
         for gamma in [2.0, np.nan, np.inf]:
