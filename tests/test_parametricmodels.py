@@ -265,6 +265,7 @@ class TestLorentzianModel(object):
 
     def setUp(self):
         self.x = np.linspace(0.1, 10., 100)
+
         self.lorentzian = Lorentzian()
 
     def test_shape(self):
