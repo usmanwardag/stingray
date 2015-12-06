@@ -1,3 +1,5 @@
+__all__ = ["Posterior", "PSDPosterior"]
+
 import numpy as np
 
 from stingray import Powerspectrum, AveragedPowerspectrum
