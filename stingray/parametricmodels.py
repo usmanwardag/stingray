@@ -1,9 +1,11 @@
 
-### Parametric models for use in fitting periodograms
+__all__ = ["ParametricModel", "Const",
+           "PowerLaw", "PowerLawConst",
+           "BrokenPowerLaw", "BrokenPowerLawConst",
+           "Lorentzian", "FixedCentroidLorentzian",
+           "CombinedModel"]
 
 import numpy as np
-import math
-
 import scipy.stats
 
 
@@ -276,11 +278,11 @@ class PowerLaw(ParametricModel):
         return np.exp(res)
 
 
-class BentPowerLaw(ParametricModel):
+class BrokenPowerLaw(ParametricModel):
 
     def __init__(self, hyperpars=None):
         """
-        A bent power law model of the form
+        A broken power law model of the form
 
             $y(x) = Ax^{-1}(1 + (x/x_\mathrm{break})^{\alpha_1-alpha_2}^{-alpha_2}$
 
@@ -386,7 +388,7 @@ class BentPowerLaw(ParametricModel):
 
     def func(self, x, alpha1, alpha2, x_break, amplitude):
         """
-        A bent power law of the form
+        A broken power law of the form
 
             $y(x) = Ax^{-1}(1 + (x/x_\mathrm{break})^{\alpha_1-alpha_2}^{-alpha_2}$
 
@@ -644,10 +646,10 @@ class PowerLawConst(ParametricModel):
         return res
 
 
-class BentPowerLawConst(ParametricModel):
+class BrokenPowerLawConst(ParametricModel):
 
     def __init__(self, hyperpars=None):
-        self.models = [BentPowerLaw(hyperpars), Const(hyperpars)]
+        self.models = [BrokenPowerLaw(hyperpars), Const(hyperpars)]
         npar = 5 ## number of parameters in the model
         name = "bentpowerlawconst" ## model name
         parnames = ["alpha1", "amplitude", "alpha2", "x_break", "const"]
