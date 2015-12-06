@@ -54,7 +54,6 @@ class Posterior(object):
         print("If you're calling this method, something is wrong!")
         return 0.0
 
-
     def logposterior(self, t0, neg=False):
         lpost = self.loglikelihood(t0) + self.logprior(t0)
         if neg == True:
