@@ -65,7 +65,6 @@ class Posterior(object):
         return self.logposterior(t0, neg=neg)
 
 
-
 class PSDPosterior(Posterior):
 
     def __init__(self, ps, model):
