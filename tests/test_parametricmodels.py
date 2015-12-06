@@ -184,6 +184,7 @@ class TestBentPowerLawModel(object):
         self.x = np.linspace(0.1,10, 100)
         self.bpl = BrokenPowerLaw()
 
+
     def test_shape(self):
         alpha1 = 1.0
         amplitude = 3.0
