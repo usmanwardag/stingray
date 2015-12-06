@@ -1,9 +1,7 @@
-
+import sys
 
 import numpy as np
-
 from nose.tools import raises
-
 
 from stingray import Lightcurve
 from stingray import Powerspectrum, AveragedPowerspectrum
@@ -63,7 +61,7 @@ class TestPowerspectrum(object):
 
     @raises(AssertionError)
     def test_init_with_nonsense_data(self):
-        nonsense_data = [None for i in xrange(100)]
+        nonsense_data = [None for i in range(100)]
         assert Powerspectrum(nonsense_data)
 
     @raises(AssertionError)
@@ -196,7 +194,13 @@ class TestPowerspectrum(object):
         had better be 'method'
         """
         ps = Powerspectrum(lc = self.lc, norm="Leahy")
-        assert ps.rebin.__defaults__[0] == "mean"
+        if sys.version_info.major == 2:
+            assert ps.rebin.func_defaults[0] == "mean"
+        elif sys.version_info.major == 3:
+            assert ps.rebin.__defaults__[0] == "mean"
+        else:
+            raise Exception("Python version not recognized! "
+                            "Currently only python 2 and 3 are supported!")
 
     def rebin_several(self, df):
         """
@@ -288,7 +292,7 @@ class TestAveragedPowerspectrum(object):
         mean_counts = mean_count_rate*dt
 
         lc_all = []
-        for n in xrange(n_lcs):
+        for n in range(n_lcs):
             poisson_counts = np.random.poisson(mean_counts,
                                            size=len(time))
 
@@ -312,7 +316,7 @@ class TestAveragedPowerspectrum(object):
         mean_counts = mean_count_rate*dt
 
         lc_all = []
-        for n in xrange(n_lcs):
+        for n in range(n_lcs):
             poisson_counts = np.random.poisson(mean_counts,
                                            size=len(time))
 
