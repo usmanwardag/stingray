@@ -109,6 +109,7 @@ class TestConstModel(object):
 
 
 
+
 class TestPowerLawModel(object):
 
     def setUp(self):
