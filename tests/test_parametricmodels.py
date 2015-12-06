@@ -197,7 +197,6 @@ class TestBentPowerLawModel(object):
         ## TODO: Need to write a meaningful test for this
         pass
 
-
     @raises(AssertionError)
     def test_func_fails_when_not_finite(self):
         for alpha1 in [2.0, np.nan, np.inf]:
@@ -438,7 +437,6 @@ class TestCombinedModels(object):
 
 
     def test_model(self):
-
         models = [Const,
                 PowerLaw,
                 BrokenPowerLaw,
