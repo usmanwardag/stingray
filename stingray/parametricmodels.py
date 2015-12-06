@@ -5,7 +5,6 @@ __all__ = ["ParametricModel", "Const",
            "Lorentzian", "FixedCentroidLorentzian",
            "CombinedModel"]
 
-
 import numpy as np
 import scipy.stats
 
@@ -38,10 +37,7 @@ class ParametricModel(object):
             MCMC chains.
 
         """
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
         assert isinstance(npar, int), "npar must be an integer!"
-=======
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
 
         self.npar = npar
         self.name = name
@@ -49,12 +45,9 @@ class ParametricModel(object):
         if parnames is not None:
             self.parnames = parnames
 
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
     def func(self, *pars):
         pass
 
-=======
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
     def __call__(self, freq, *pars):
         return self.func(freq, *pars)
 
@@ -131,12 +124,9 @@ class Const(ParametricModel):
         a_var = hyperpars["a_var"]
 
         def logprior(a):
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 
             assert np.isfinite(a), "A must be finite."
 
-=======
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
             pp = scipy.stats.norm.pdf(a, a_mean, a_var)
             if pp == 0.0:
                 return logmin
@@ -164,10 +154,7 @@ class Const(ParametricModel):
         model: numpy.ndarray
             The power law model for all values in x.
         """
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
         assert np.isfinite(a), "A must be finite."
-=======
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
         return np.ones_like(x)*a
 
 
@@ -257,13 +244,10 @@ class PowerLaw(ParametricModel):
         amplitude_max =  hyperpars["amplitude_max"]
 
         def logprior(alpha, amplitude):
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 
             assert np.isfinite(alpha), "alpha must be finite!"
             assert np.isfinite(amplitude), "amplitude must be finite"
 
-=======
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
             p_alpha = (alpha >= alpha_min and alpha <= alpha_max)/\
                       (alpha_max-alpha_min)
             p_amplitude = (amplitude >= amplitude_min and
@@ -302,30 +286,19 @@ class PowerLaw(ParametricModel):
         model: numpy.ndarray
             The power law model for all values in x.
         """
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
         assert np.isfinite(alpha), "alpha must be finite!"
         assert np.isfinite(amplitude), "amplitude must be finite"
 
 
-=======
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
         res = -alpha*np.log(x) + amplitude
         return np.exp(res)
 
 
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 class BrokenPowerLaw(ParametricModel):
 
     def __init__(self, hyperpars=None):
         """
         A broken power law model of the form
-=======
-class BentPowerLaw(ParametricModel):
-
-    def __init__(self, hyperpars=None):
-        """
-        A bent power law model of the form
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
 
             $y(x) = Ax^{-1}(1 + (x/x_\mathrm{break})^{\alpha_1-alpha_2}^{-alpha_2}$
 
@@ -409,14 +382,11 @@ class BentPowerLaw(ParametricModel):
 
 
         def logprior(alpha1, alpha2, x_break, amplitude):
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 
             for p,n in zip([alpha1, alpha2, x_break, amplitude], self.parnames):
                 assert np.isfinite(p), "%s must be finite!"%n
 
 
-=======
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
             p_alpha1 = (alpha1 >= alpha1_min and alpha1 <= alpha1_max)/\
                        (alpha1_max-alpha1_min)
             p_amplitude = (amplitude >= amplitude_min and
@@ -439,11 +409,7 @@ class BentPowerLaw(ParametricModel):
 
     def func(self, x, alpha1, alpha2, x_break, amplitude):
         """
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
         A broken power law of the form
-=======
-        A bent power law of the form
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
 
             $y(x) = Ax^{-1}(1 + (x/x_\mathrm{break})^{\alpha_1-alpha_2}^{-alpha_2}$
 
@@ -463,13 +429,10 @@ class BentPowerLaw(ParametricModel):
 
         """
         ### compute bending factor
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 
         for p,n in zip([alpha1, alpha2, x_break, amplitude], self.parnames):
             assert np.isfinite(p), "%s must be finite!"%n
 
-=======
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
         logz = (alpha2 - alpha1)*(np.log(x) - x_break)
 
         ### be careful with very large or very small values
@@ -551,27 +514,19 @@ class Lorentzian(ParametricModel):
         """
         npar = 3
         name = "lorentzian"
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
         parnames = ["x0", "gamma", "A"]
-=======
-        parnames = ["gamma", "A", "x0"]
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
         ParametricModel.__init__(self, npar, name, parnames)
         if hyperpars is not None:
             self.set_prior(hyperpars)
 
 
     def set_prior(self, hyperpars):
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
         x0_min = hyperpars["x0_min"]
         x0_max = hyperpars["x0_max"]
-=======
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
         gamma_min = hyperpars["gamma_min"]
         gamma_max = hyperpars["gamma_max"]
         amplitude_min= hyperpars["amplitude_min"]
         amplitude_max = hyperpars["amplitude_max"]
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 
         def logprior(x0, gamma, amplitude):
 
@@ -584,14 +539,6 @@ class Lorentzian(ParametricModel):
                            amplitude <= amplitude_max)/\
                           (amplitude_max-amplitude_min)
 
-=======
-        x0_min = hyperpars["x0_min"]
-        x0_max = hyperpars["x0_max"]
-
-        def logprior(gamma, amplitude, x0):
-            p_gamma = (gamma >= gamma_min and gamma <= gamma_max)/(gamma_max-gamma_min)
-            p_amplitude = (amplitude >= amplitude_min and amplitude <= amplitude_max)/(amplitude_max-amplitude_min)
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
             p_x0 = (x0 >= x0_min and x0 <= x0_max)/(x0_max - x0_min)
 
             pp = p_gamma*p_amplitude*p_x0
@@ -618,13 +565,10 @@ class Lorentzian(ParametricModel):
         amplitude: float
             The height or amplitude of the Lorentzian profile
         """
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 
         for p,n in zip([x0, gamma, amplitude], self.parnames):
             assert np.isfinite(p), "%s must be finite!"%n
 
-=======
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
         gamma = np.exp(gamma)
         amplitude = np.exp(amplitude)
 
@@ -633,7 +577,6 @@ class Lorentzian(ParametricModel):
         return y
 
 
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 class FixedCentroidLorentzian(ParametricModel):
 
     def __init__(self, x0, hyperpars=None):
@@ -644,16 +587,7 @@ class FixedCentroidLorentzian(ParametricModel):
         npar = 2
         name = "fixedcentroidlorentzian"
         parnames = ["gamma", "A"]
-=======
 
-class FixedCentroidLorentzian(ParametricModel):
-
-    def __init__(self, x0, hyperpars=None):
-        self.x0 = x0
-        npar = 3
-        name = "fixedcentroidlorentzian"
-        parnames = ["gamma", "A", "const"]
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
         ParametricModel.__init__(self, npar, name, parnames)
         if hyperpars is not None:
             self.set_prior(hyperpars)
@@ -665,7 +599,6 @@ class FixedCentroidLorentzian(ParametricModel):
         gamma_max = hyperpars["gamma_max"]
         amplitude_min= hyperpars["amplitude_min"]
         amplitude_max = hyperpars["amplitude_max"]
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 
 
         def logprior(gamma, amplitude):
@@ -677,17 +610,6 @@ class FixedCentroidLorentzian(ParametricModel):
             p_amplitude = (amplitude >= amplitude_min and amplitude <= amplitude_max)/(amplitude_max-amplitude_min)
 
             pp = p_gamma*p_amplitude
-=======
-        a_mean = hyperpars["a_mean"]
-        a_var = hyperpars["a_var"]
-
-        def logprior(gamma, amplitude, const):
-            p_gamma = (gamma >= gamma_min and gamma <= gamma_max)/(gamma_max-gamma_min)
-            p_amplitude = (amplitude >= amplitude_min and amplitude <= amplitude_max)/(amplitude_max-amplitude_min)
-            p_const= scipy.stats.norm.pdf(const, a_mean, a_var)
-
-            pp = p_gamma*p_amplitude*p_const
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
             if pp == 0.0:
                 return logmin
             else:
@@ -696,11 +618,7 @@ class FixedCentroidLorentzian(ParametricModel):
         self.logprior = logprior
 
 
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
     def func(self, x, gamma, amplitude):
-=======
-    def func(self, x, gamma, amplitude, const):
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
         """
         Lorentzian profile for fitting QPOs.
 
@@ -713,7 +631,6 @@ class FixedCentroidLorentzian(ParametricModel):
         amplitude: float
             The height or amplitude of the Lorentzian profile
         """
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 
         assert np.isfinite(gamma), "gamma must be finite"
         assert np.isfinite(amplitude), "amplitude must be finite"
@@ -731,12 +648,6 @@ class Gaussian(ParametricModel):
 
 
 
-=======
-        y = Lorentzian.func(self, x, self.x0, gamma, amplitude)
-        y += const
-        return y
-
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
 class PowerLawConst(ParametricModel):
 
     def __init__(self, hyperpars=None):
@@ -759,18 +670,12 @@ class PowerLawConst(ParametricModel):
 
         """
         def logprior(alpha, amplitude, const):
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
             for p,n in zip([alpha, amplitude, const], self.parnames):
                 assert np.isfinite(p), "%s must be finite!"%n
 
             pp = self.models[0].logprior(alpha, amplitude) + \
                  self.models[1].logprior(const)
             return pp
-=======
-                pp = self.models[0].logprior(alpha, amplitude) + \
-                     self.models[1].logprior(const)
-                return pp
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
 
         self.logprior = logprior
 
@@ -795,28 +700,18 @@ class PowerLawConst(ParametricModel):
         model: numpy.ndarray
             The power law model for all values in x.
         """
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 
         for p,n in zip([alpha, amplitude, const], self.parnames):
             assert np.isfinite(p), "%s must be finite!"%n
 
-=======
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
         res = self.models[0].func(x, alpha, amplitude) + self.models[1].func(x, const)
         return res
 
 
-<<<<<<< 032b3816f8390394882d2124a06145be9c9c48b8
 class BrokenPowerLawConst(ParametricModel):
 
     def __init__(self, hyperpars=None):
         self.models = [BrokenPowerLaw(hyperpars), Const(hyperpars)]
-=======
-class BentPowerLawConst(ParametricModel):
-
-    def __init__(self, hyperpars=None):
-        self.models = [BentPowerLaw(hyperpars), Const(hyperpars)]
->>>>>>> Added first implementation of ParametricModel class and subclasses, also added some docstrings
         npar = 5 ## number of parameters in the model
         name = "bentpowerlawconst" ## model name
         parnames = ["alpha1", "amplitude", "alpha2", "x_break", "const"]
