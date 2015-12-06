@@ -503,7 +503,7 @@ class Lorentzian(ParametricModel):
         x0_min = hyperpars["x0_min"]
         x0_max = hyperpars["x0_max"]
 
-        def logprior(gamma, amplitude, x0):
+        def logprior(x0, gamma, amplitude):
             p_gamma = (gamma >= gamma_min and gamma <= gamma_max)/(gamma_max-gamma_min)
             p_amplitude = (amplitude >= amplitude_min and amplitude <= amplitude_max)/(amplitude_max-amplitude_min)
             p_x0 = (x0 >= x0_min and x0 <= x0_max)/(x0_max - x0_min)
