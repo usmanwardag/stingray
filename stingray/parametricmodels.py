@@ -600,7 +600,6 @@ class FixedCentroidLorentzian(ParametricModel):
         amplitude_min= hyperpars["amplitude_min"]
         amplitude_max = hyperpars["amplitude_max"]
 
-
         def logprior(gamma, amplitude):
 
             assert np.isfinite(gamma), "gamma must be finite"
