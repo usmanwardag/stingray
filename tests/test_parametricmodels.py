@@ -103,7 +103,6 @@ class TestConstModel(object):
         self.const.logprior(np.nan)
 
 
-
 class TestPowerLawModel(object):
 
     def setUp(self):
