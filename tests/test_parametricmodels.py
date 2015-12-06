@@ -1,16 +1,18 @@
 
-#import matplotlib.pyplot as plt
 from nose.tools import eq_
 
 import numpy as np
-from BayesPSD import parametricmodels
+
+from stingray import parametricmodels
+from stingray import Const, PowerLaw, BrokenPowerLaw, Lorentzian
+from stingray import CombinedModel
 
 logmin = parametricmodels.logmin
 
 class TestConstModel(object):
     def setUp(self):
         self.x = np.arange(1000)
-        self.const = parametricmodels.Const()
+        self.const = Const()
 
     def test_length(self):
         a = 2.0
@@ -25,7 +27,7 @@ class TestPowerLawModel(object):
 
     def setUp(self):
         self.x = np.arange(1000)
-        self.pl = parametricmodels.PowerLaw()
+        self.pl = PowerLaw()
 
     def test_shape(self):
         alpha = 2.0
@@ -40,7 +42,7 @@ class TestPowerLawModel(object):
         alpha = 2.0
         amplitude = 3.0
 
-        for x in xrange(1,10):
+        for x in range(1,10):
             eq_(pl_eqn(x, alpha, amplitude), self.pl(x, alpha, amplitude))
 
 
@@ -48,7 +50,7 @@ class TestBentPowerLawModel(object):
 
     def setUp(self):
         self.x = np.arange(1000)
-        self.bpl = parametricmodels.BentPowerLaw()
+        self.bpl = BrokenPowerLaw()
 
     def test_shape(self):
         alpha1 = 1.0
@@ -71,18 +73,18 @@ class TestBentPowerLawModel(object):
         pass
 
 
-class TestQPOModel(object):
+class TestLorentzianModel(object):
 
     def setUp(self):
         self.x = np.arange(1000)
-        self.qpo = parametricmodels.QPO()
+        self.lorentzian = Lorentzian()
 
     def test_shape(self):
         gamma = 1.0
         amplitude = 2.0
         x0 = 200.0
 
-        c = self.qpo(self.x, gamma, amplitude, x0)
+        c = self.lorentzian(self.x, gamma, amplitude, x0)
         assert c.shape == self.x.shape
 
 
@@ -93,11 +95,10 @@ class TestQPOModel(object):
 
         qpo_func = lambda x, g, amp, cen: (np.exp(amp)/np.pi)*0.5*np.exp(g)/\
                                           ((x-cen)**2.0+(0.5*np.exp(g))**2.0)
-        for x in xrange(1, 20):
+        for x in range(1, 20):
             assert np.allclose(qpo_func(x, gamma, amplitude, x0),
-                               self.qpo(x, gamma, amplitude, x0), atol=1.e-10)
-
-
+                               self.lorentzian(x, x0, gamma, amplitude),
+                               atol=1.e-10)
 
 
 class TestCombinedModels(object):
@@ -110,11 +111,11 @@ class TestCombinedModels(object):
         self.npar_const = 1
         self.npar_powerlaw = 2
         self.npar_bentpowerlaw = 4
-        self.npar_qpo = 3
+        self.npar_lorentzian = 3
 
 
     def npar_equal(self, model1, model2):
-        mod = parametricmodels.CombinedModel([model1, model2])
+        mod = CombinedModel([model1, model2])
         npar_model1 = self.__getattribute__("npar_"+mod.name[0])
         npar_model2 = self.__getattribute__("npar_"+mod.name[1])
         eq_(mod.npar, npar_model1+npar_model2)
@@ -127,10 +128,10 @@ class TestCombinedModels(object):
         x0 = 200.0
         a = 2.0
         """
-        models = [parametricmodels.Const,
-                parametricmodels.PowerLaw,
-                parametricmodels.BentPowerLaw,
-                parametricmodels.QPO]
+        models = [Const,
+                PowerLaw,
+                BrokenPowerLaw,
+                Lorentzian]
 
         for m1 in models:
             for m2 in models:
@@ -142,7 +143,7 @@ class TestConstPrior(object):
 
     def setUp(self):
         self.hyperpars = {"a_mean": 2.0, "a_var": 0.1}
-        self.const = parametricmodels.Const(self.hyperpars)
+        self.const = Const(self.hyperpars)
 
     def test_prior_nonzero(self):
         a = 2.0
@@ -159,8 +160,10 @@ class TestPowerlawPrior(object):
         self.hyperpars = {"alpha_min":-8.0, "alpha_max":5.0,
                           "amplitude_min": -10.0, "amplitude_max":10.0}
 
-        alpha_norm = 1.0/(self.hyperpars["alpha_max"]-self.hyperpars["alpha_min"])
-        amplitude_norm = 1.0/(self.hyperpars["amplitude_max"]-self.hyperpars["amplitude_min"])
+        alpha_norm = 1.0/(self.hyperpars["alpha_max"]-
+                          self.hyperpars["alpha_min"])
+        amplitude_norm = 1.0/(self.hyperpars["amplitude_max"]-
+                              self.hyperpars["amplitude_min"])
         self.prior_norm = np.log(alpha_norm*amplitude_norm)
 
         self.pl = parametricmodels.PowerLaw(self.hyperpars)
@@ -191,19 +194,30 @@ class TestBentPowerLawPrior(object):
                  "alpha2_min":-8.0, "alpha2_max":4.0,
                  "x_break_min":np.log(0.1), "x_break_max":np.log(500)}
 
-        alpha1_norm = 1.0/(self.hyperpars["alpha1_max"]-self.hyperpars["alpha1_min"])
-        alpha2_norm = 1.0/(self.hyperpars["alpha2_max"]-self.hyperpars["alpha2_min"])
-        amplitude_norm = 1.0/(self.hyperpars["amplitude_max"]-self.hyperpars["amplitude_min"])
-        x_break_norm = 1.0/(self.hyperpars["x_break_max"]-self.hyperpars["x_break_min"])
-        self.prior_norm = np.log(alpha1_norm*alpha2_norm*amplitude_norm*x_break_norm)
-        self.bpl = parametricmodels.BentPowerLaw(self.hyperpars)
+        alpha1_norm = 1.0/(self.hyperpars["alpha1_max"]-
+                           self.hyperpars["alpha1_min"])
+
+        alpha2_norm = 1.0/(self.hyperpars["alpha2_max"]-
+                           self.hyperpars["alpha2_min"])
+
+        amplitude_norm = 1.0/(self.hyperpars["amplitude_max"]-
+                              self.hyperpars["amplitude_min"])
+
+        x_break_norm = 1.0/(self.hyperpars["x_break_max"]-
+                            self.hyperpars["x_break_min"])
+
+        self.prior_norm = np.log(alpha1_norm*alpha2_norm*
+                                 amplitude_norm*x_break_norm)
+
+        self.bpl = BrokenPowerLaw(self.hyperpars)
 
 
     def zero_prior(self, alpha1, amplitude, alpha2, x_break):
-        assert self.bpl.logprior(alpha1, amplitude, alpha2, x_break) == logmin
+        assert self.bpl.logprior(alpha1, alpha2, x_break, amplitude) == logmin
 
     def nonzero_prior(self, alpha1, amplitude, alpha2, x_break):
-        assert self.bpl.logprior(alpha1, amplitude, alpha2, x_break) == self.prior_norm
+        assert self.bpl.logprior(alpha1, alpha2, x_break, amplitude) == \
+               self.prior_norm
 
 
     def test_prior(self):
@@ -225,7 +239,7 @@ class TestBentPowerLawPrior(object):
 
 
 
-class TestQPOPrior(object):
+class TestLorentzianPrior(object):
 
     def setUp(self):
 
@@ -233,18 +247,22 @@ class TestQPOPrior(object):
                      "amplitude_min":-10.0, "amplitude_max":10.0,
                      "x0_min":0.0, "x0_max":100.0}
 
-        gamma_norm = 1.0/(self.hyperpars["gamma_max"]-self.hyperpars["gamma_min"])
-        amplitude_norm = 1.0/(self.hyperpars["amplitude_max"]-self.hyperpars["amplitude_min"])
+        gamma_norm = 1.0/(self.hyperpars["gamma_max"]-
+                          self.hyperpars["gamma_min"])
+
+        amplitude_norm = 1.0/(self.hyperpars["amplitude_max"]-
+                              self.hyperpars["amplitude_min"])
+
         x0_norm = 1.0/(self.hyperpars["x0_max"]-self.hyperpars["x0_min"])
         self.prior_norm = np.log(gamma_norm*amplitude_norm*x0_norm)
-        self.qpo = parametricmodels.QPO(self.hyperpars)
+        self.lorentzian = Lorentzian(self.hyperpars)
 
 
     def zero_prior(self, gamma, amplitude, x0):
-        assert self.qpo.logprior(gamma, amplitude, x0) == logmin
+        assert self.lorentzian.logprior(x0, gamma, amplitude) == logmin
 
     def nonzero_prior(self, gamma, amplitude, x0):
-        assert self.qpo.logprior(gamma, amplitude, x0) == self.prior_norm
+        assert self.lorentzian.logprior(x0, gamma, amplitude) == self.prior_norm
 
 
     def test_prior(self):
