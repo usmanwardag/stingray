@@ -7,82 +7,6 @@ from BayesPSD import parametricmodels
 
 logmin = parametricmodels.logmin
 
-
-
-
-
-"""
-
-
-
-
-
-def test_qpo():
-    x = np.arange(1000)
-
-    gamma = 1.0
-    norm = 2.0
-    x0 = 200.0
-
-    c = parametricmodels.QPO()(x, gamma, norm, x0)
-
-    plt.figure()
-    plt.plot(x,c)
-    plt.savefig("qpo_model_test.png", format="png")
-    plt.close()
-
-    return
-
-
-def test_combmodel1():
-    models = [parametricmodels.QPO, parametricmodels.Const]
-
-    cmod = parametricmodels.CombinedModel(models, hyperpars=None)
-    print("The combined number of parameters is %i (should be 4)"%cmod.npar)
-    print("The name of the combined model is %s"%cmod.name)
-
-    x = np.arange(1000)
-
-    gamma = 0.5
-    norm = 3.0
-    x0 = 200.0
-    a = 2.0
-
-    c = cmod(x, gamma, norm, x0, a)
-    plt.figure()
-    plt.plot(x,c)
-    plt.ylim(0.0, 5.0)
-    plt.savefig("comb_model_test1.png", format="png")
-    plt.close()
-
-    return
-
-def test_combmodel2():
-    models = [parametricmodels.PowerLaw, parametricmodels.QPO, parametricmodels.Const]
-
-    cmod = parametricmodels.CombinedModel(models, hyperpars=None)
-    print("The combined number of parameters is %i (should be 6)"%cmod.npar)
-    print("The name of the combined model is %s"%cmod.name)
-
-    x = np.arange(1000)
-
-    alpha = 1.0
-    pl_norm = 3.0
-    gamma = 0.5
-    qpo_norm = 3.0
-    x0 = 200.0
-    a = 2.0
-
-    c = cmod(x, alpha, pl_norm, gamma, qpo_norm, x0, a)
-    plt.figure()
-    plt.loglog(x,c)
-    plt.ylim(0.0, 5.0)
-    plt.savefig("comb_model_test2.png", format="png")
-    plt.close()
-
-    return
-    """
-
 class TestConstModel(object):
     def setUp(self):
         self.x = np.arange(1000)
@@ -167,9 +91,11 @@ class TestQPOModel(object):
         amplitude = 2.0
         x0 = 200.0
 
-        qpo_func = lambda x, g, amp, cen: (np.exp(amp)/np.pi)*0.5*np.exp(g)/((x-cen)**2.0+(0.5*np.exp(g))**2.0)
+        qpo_func = lambda x, g, amp, cen: (np.exp(amp)/np.pi)*0.5*np.exp(g)/\
+                                          ((x-cen)**2.0+(0.5*np.exp(g))**2.0)
         for x in xrange(1, 20):
-            assert np.allclose(qpo_func(x, gamma, amplitude, x0), self.qpo(x, gamma, amplitude, x0), atol=1.e-10)
+            assert np.allclose(qpo_func(x, gamma, amplitude, x0),
+                               self.qpo(x, gamma, amplitude, x0), atol=1.e-10)
 
 
 
