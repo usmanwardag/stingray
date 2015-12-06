@@ -1,7 +1,6 @@
 
 from nose.tools import eq_, raises
 
-
 import numpy as np
 
 from stingray import parametricmodels
@@ -106,7 +105,6 @@ class TestConstModel(object):
         hyperpars =  {"a_mean":2.0, "a_var":0.2}
         self.const.set_prior(hyperpars)
         self.const.logprior(np.nan)
-
 
 
 class TestPowerLawModel(object):
