@@ -105,6 +105,8 @@ class TestConstModel(object):
         self.const.set_prior(hyperpars)
         self.const.logprior(np.nan)
 
+
+
 class TestPowerLawModel(object):
 
     def setUp(self):
