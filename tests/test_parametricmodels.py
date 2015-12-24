@@ -1,13 +1,52 @@
 
-from nose.tools import eq_
+from nose.tools import eq_, raises
+
 
 import numpy as np
 
 from stingray import parametricmodels
-from stingray import Const, PowerLaw, BrokenPowerLaw, Lorentzian
+from stingray import ParametricModel, Const, PowerLaw, BrokenPowerLaw, Lorentzian
 from stingray import CombinedModel
 
 logmin = parametricmodels.logmin
+
+
+class TestParametricModel(object):
+    def test_npar_passes_when_int(self):
+        npar = int(2)
+        p = ParametricModel(npar, "MyModel")
+
+    def test_npar_passes_when_numpy_int(self):
+        npar = np.int(2)
+        p = ParametricModel(npar, "MyNumpyModel")
+
+    @raises(AssertionError)
+    def test_npar_fails_when_not_int(self):
+        npar = float(2.0)
+        p = ParametricModel(npar, "MyFailingModel")
+
+    @raises(AssertionError)
+    def test_npar_fails_when_nan(self):
+        npar = np.nan
+        p = ParametricModel(npar, "MyNaNModel")
+
+    @raises(AssertionError)
+    def test_npar_fails_when_inf(self):
+        npar = np.inf
+        p = ParametricModel(npar, "MyInfModel")
+
+    def test_name_passes_when_string(self):
+        npar = 2
+        name = "MyModel"
+        p = ParametricModel(npar, name)
+
+    def test_name_fails_when_number(self):
+        npar = 2
+        name = 2
+        p = ParametricModel(npar, name)
+
+
+
 
 class TestConstModel(object):
     def setUp(self):
@@ -22,6 +61,48 @@ class TestConstModel(object):
         a = 2.0
         all(self.const(self.x, a)) == a
 
+    @raises(AssertionError)
+    def test_func_fails_when_nan(self):
+        a = np.nan
+        self.const(self.x, a)
+
+    @raises(AssertionError)
+    def test_func_fails_when_inf(self):
+        a = np.inf
+        self.const(self.x, a)
+
+    @raises(AttributeError)
+    def test_hyperparameters_not_set(self):
+        self.logprior
+
+    def test_hyperparamers(self):
+        hyperpars = {"a_mean":2.0, "a_var":0.2}
+        self.const.set_prior(hyperpars)
+
+    def test_sensible_parameter_is_finite(self):
+        hyperpars = {"a_mean":2.0, "a_var":0.2}
+        self.const.set_prior(hyperpars)
+        assert self.const.logprior(2.0) > 0.1
+        assert self.const.logprior(2.0) < 1.0
+        assert np.isfinite(self.const.logprior(2.0))
+
+    def test_crazy_parameter_returns_logmin(self):
+        hyperpars = {"a_mean":2.0, "a_var":0.2}
+        self.const.set_prior(hyperpars)
+        crazy_par = 200.0
+        assert np.isclose(self.const.logprior(crazy_par), logmin)
+
+    @raises(AssertionError)
+    def test_inf_pars_fails_prior(self):
+        hyperpars = {"a_mean":2.0, "a_var":0.2}
+        self.const.set_prior(hyperpars)
+        self.const.logprior(np.inf)
+
+    @raises(AssertionError)
+    def test_nan_pars_fails_prior(self):
+        hyperpars =  {"a_mean":2.0, "a_var":0.2}
+        self.const.set_prior(hyperpars)
+        self.const.logprior(np.nan)
 
 class TestPowerLawModel(object):
 
@@ -44,6 +125,53 @@ class TestPowerLawModel(object):
 
         for x in range(1,10):
             eq_(pl_eqn(x, alpha, amplitude), self.pl(x, alpha, amplitude))
+
+
+    @raises(AttributeError)
+    def test_no_prior_defined(self):
+        self.pl.logprior
+
+    def test_prior_runs(self):
+        #hyperparameters
+        hyperpars = {"alpha_min":1.0, "alpha_max":5.0,
+                     "amplitude_min":-5.0, "amplitude_max":5.0}
+        self.pl.set_prior(hyperpars)
+        self.pl.logprior(2.0,2.0)
+
+    def test_prior_works(self):
+        hyperpars = {"alpha_min":1.0, "alpha_max":5.0,
+                     "amplitude_min":-5.0, "amplitude_max":5.0}
+        self.pl.set_prior(hyperpars)
+        prior_test = self.pl.logprior(2.0, 2.0)
+        print("prior_test: " + str(prior_test))
+        assert np.isfinite(prior_test)
+        assert prior_test > logmin
+
+        prior_test = self.pl.logprior(-1.0, 2.0)
+        assert prior_test == logmin
+
+        prior_test = self.pl.logprior(2.0, -6.0)
+        assert prior_test == logmin
+
+        prior_test = self.pl.logprior(6.0, 6.0)
+        assert prior_test == logmin
+
+    def _nonfinite_pars_prior(self, par1, par2):
+        self.pl.logprior(par1, par2)
+
+
+    @raises(AssertionError)
+    def test_inf_pars_fails_prior(self):
+        hyperpars = {"alpha_min":1.0, "alpha_max":5.0,
+                     "amplitude_min":-5.0, "amplitude_max":5.0}
+        self.pl.set_prior(hyperpars)
+        for p1 in [2.0, np.nan, np.inf]:
+            for p2 in [np.inf, np.nan]:
+                print("p1: " + str(p1))
+                print("p2: " + str(p2))
+                yield self._nonfinite_pars_prior, p1, p2
+
+
 
 
 class TestBentPowerLawModel(object):
