@@ -37,12 +37,16 @@ class ParametricModel(object):
             MCMC chains.
 
         """
+        assert isinstance(npar, int), "npar must be an integer!"
 
         self.npar = npar
         self.name = name
 
         if parnames is not None:
             self.parnames = parnames
+
+    def func(self, *pars):
+        pass
 
     def __call__(self, freq, *pars):
         return self.func(freq, *pars)
@@ -120,6 +124,9 @@ class Const(ParametricModel):
         a_var = hyperpars["a_var"]
 
         def logprior(a):
+
+            assert np.isfinite(a), "A must be finite."
+
             pp = scipy.stats.norm.pdf(a, a_mean, a_var)
             if pp == 0.0:
                 return logmin
@@ -147,6 +154,7 @@ class Const(ParametricModel):
         model: numpy.ndarray
             The power law model for all values in x.
         """
+        assert np.isfinite(a), "A must be finite."
         return np.ones_like(x)*a
 
 
@@ -236,6 +244,12 @@ class PowerLaw(ParametricModel):
         amplitude_max =  hyperpars["amplitude_max"]
 
         def logprior(alpha, amplitude):
+
+            print("alpha: " + str(alpha))
+            print("amplitude: " + str(amplitude))
+            assert np.isfinite(alpha), "alpha must be finite!"
+            assert np.isfinite(amplitude), "amplitude must be finite"
+
             p_alpha = (alpha >= alpha_min and alpha <= alpha_max)/\
                       (alpha_max-alpha_min)
             p_amplitude = (amplitude >= amplitude_min and
@@ -274,6 +288,10 @@ class PowerLaw(ParametricModel):
         model: numpy.ndarray
             The power law model for all values in x.
         """
+        assert np.isfinite(alpha), "alpha must be finite!"
+        assert np.isfinite(amplitude), "amplitude must be finite"
+
+
         res = -alpha*np.log(x) + amplitude
         return np.exp(res)
 
