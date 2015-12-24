@@ -177,7 +177,6 @@ class TestPowerLawModel(object):
                 self.pl.logprior(p1, p2)
 
 
-
 class TestBentPowerLawModel(object):
 
     def setUp(self):
