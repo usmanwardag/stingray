@@ -104,7 +104,6 @@ class TestConstModel(object):
         self.const.set_prior(hyperpars)
         self.const.logprior(np.nan)
 
-
 class TestPowerLawModel(object):
 
     def setUp(self):
@@ -170,8 +169,6 @@ class TestPowerLawModel(object):
         self.pl.set_prior(hyperpars)
         for p1 in [2.0, np.inf, np.nan]:
             for p2 in [np.nan, np.inf]:
-                self.pl.logprior(p1, p2)
-
 
 class TestBentPowerLawModel(object):
 
