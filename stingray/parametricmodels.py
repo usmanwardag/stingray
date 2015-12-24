@@ -514,23 +514,31 @@ class Lorentzian(ParametricModel):
         """
         npar = 3
         name = "lorentzian"
-        parnames = ["gamma", "A", "x0"]
+        parnames = ["x0", "gamma", "A"]
         ParametricModel.__init__(self, npar, name, parnames)
         if hyperpars is not None:
             self.set_prior(hyperpars)
 
 
     def set_prior(self, hyperpars):
+        x0_min = hyperpars["x0_min"]
+        x0_max = hyperpars["x0_max"]
         gamma_min = hyperpars["gamma_min"]
         gamma_max = hyperpars["gamma_max"]
         amplitude_min= hyperpars["amplitude_min"]
         amplitude_max = hyperpars["amplitude_max"]
-        x0_min = hyperpars["x0_min"]
-        x0_max = hyperpars["x0_max"]
 
         def logprior(x0, gamma, amplitude):
-            p_gamma = (gamma >= gamma_min and gamma <= gamma_max)/(gamma_max-gamma_min)
-            p_amplitude = (amplitude >= amplitude_min and amplitude <= amplitude_max)/(amplitude_max-amplitude_min)
+
+            for p,n in zip([x0, gamma, amplitude], self.parnames):
+                assert np.isfinite(p), "%s must be finite!"%n
+
+            p_gamma = (gamma >= gamma_min and gamma <= gamma_max)/\
+                      (gamma_max-gamma_min)
+            p_amplitude = (amplitude >= amplitude_min and
+                           amplitude <= amplitude_max)/\
+                          (amplitude_max-amplitude_min)
+
             p_x0 = (x0 >= x0_min and x0 <= x0_max)/(x0_max - x0_min)
 
             pp = p_gamma*p_amplitude*p_x0
@@ -557,6 +565,10 @@ class Lorentzian(ParametricModel):
         amplitude: float
             The height or amplitude of the Lorentzian profile
         """
+
+        for p,n in zip([x0, gamma, amplitude], self.parnames):
+            assert np.isfinite(p), "%s must be finite!"%n
+
         gamma = np.exp(gamma)
         amplitude = np.exp(amplitude)
 
@@ -565,14 +577,16 @@ class Lorentzian(ParametricModel):
         return y
 
 
-
 class FixedCentroidLorentzian(ParametricModel):
 
     def __init__(self, x0, hyperpars=None):
+
+        assert np.isfinite(x0), "x0 must be finite!"
+
         self.x0 = x0
-        npar = 3
+        npar = 2
         name = "fixedcentroidlorentzian"
-        parnames = ["gamma", "A", "const"]
+        parnames = ["gamma", "A"]
         ParametricModel.__init__(self, npar, name, parnames)
         if hyperpars is not None:
             self.set_prior(hyperpars)
@@ -584,15 +598,17 @@ class FixedCentroidLorentzian(ParametricModel):
         gamma_max = hyperpars["gamma_max"]
         amplitude_min= hyperpars["amplitude_min"]
         amplitude_max = hyperpars["amplitude_max"]
-        a_mean = hyperpars["a_mean"]
-        a_var = hyperpars["a_var"]
 
-        def logprior(gamma, amplitude, const):
+
+        def logprior(gamma, amplitude):
+
+            assert np.isfinite(gamma), "gamma must be finite"
+            assert np.isfinite(amplitude), "amplitude must be finite"
+
             p_gamma = (gamma >= gamma_min and gamma <= gamma_max)/(gamma_max-gamma_min)
             p_amplitude = (amplitude >= amplitude_min and amplitude <= amplitude_max)/(amplitude_max-amplitude_min)
-            p_const= scipy.stats.norm.pdf(const, a_mean, a_var)
 
-            pp = p_gamma*p_amplitude*p_const
+            pp = p_gamma*p_amplitude
             if pp == 0.0:
                 return logmin
             else:
@@ -601,7 +617,7 @@ class FixedCentroidLorentzian(ParametricModel):
         self.logprior = logprior
 
 
-    def func(self, x, gamma, amplitude, const):
+    def func(self, x, gamma, amplitude):
         """
         Lorentzian profile for fitting QPOs.
 
@@ -614,8 +630,11 @@ class FixedCentroidLorentzian(ParametricModel):
         amplitude: float
             The height or amplitude of the Lorentzian profile
         """
-        y = Lorentzian.func(self, x, self.x0, gamma, amplitude)
-        y += const
+
+        assert np.isfinite(gamma), "gamma must be finite"
+        assert np.isfinite(amplitude), "amplitude must be finite"
+
+        y = Lorentzian().func(x, self.x0, gamma, amplitude)
         return y
 
 class PowerLawConst(ParametricModel):
@@ -640,9 +659,12 @@ class PowerLawConst(ParametricModel):
 
         """
         def logprior(alpha, amplitude, const):
-                pp = self.models[0].logprior(alpha, amplitude) + \
-                     self.models[1].logprior(const)
-                return pp
+            for p,n in zip([alpha, amplitude, const], self.parnames):
+                assert np.isfinite(p), "%s must be finite!"%n
+
+            pp = self.models[0].logprior(alpha, amplitude) + \
+                 self.models[1].logprior(const)
+            return pp
 
         self.logprior = logprior
 
@@ -667,6 +689,10 @@ class PowerLawConst(ParametricModel):
         model: numpy.ndarray
             The power law model for all values in x.
         """
+
+        for p,n in zip([alpha, amplitude, const], self.parnames):
+            assert np.isfinite(p), "%s must be finite!"%n
+
         res = self.models[0].func(x, alpha, amplitude) + self.models[1].func(x, const)
         return res
 
