@@ -49,11 +49,12 @@ class TestParametricModel(object):
 
 
 class TestConstModel(object):
+
     def setUp(self):
         self.x = np.arange(1000)
         self.const = Const()
 
-    def test_length(self):
+    def test_shape(self):
         a = 2.0
         assert self.const(self.x,a).shape == self.x.shape
 
@@ -113,9 +114,7 @@ class TestPowerLawModel(object):
     def test_shape(self):
         alpha = 2.0
         amplitude = 3.0
-
         assert self.pl(self.x, alpha, amplitude).shape == self.x.shape
-
 
     def test_value(self):
         pl_eqn = lambda x, i, a: np.exp(-i*np.log(x) + a)
@@ -127,11 +126,18 @@ class TestPowerLawModel(object):
             eq_(pl_eqn(x, alpha, amplitude), self.pl(x, alpha, amplitude))
 
 
+    @raises(AssertionError)
+    def test_func_fails_when_not_finite(self):
+        x = np.linspace(0,10, 100)
+        for p1 in [2.0, np.nan, np.inf]:
+            for p2 in [np.inf, np.nan]:
+                self.pl(x, p1, p2)
+
     @raises(AttributeError)
-    def test_no_prior_defined(self):
+    def test_hyperparameters_not_set(self):
         self.pl.logprior
 
-    def test_prior_runs(self):
+    def test_hyperparameters(self):
         #hyperparameters
         hyperpars = {"alpha_min":1.0, "alpha_max":5.0,
                      "amplitude_min":-5.0, "amplitude_max":5.0}
@@ -156,21 +162,15 @@ class TestPowerLawModel(object):
         prior_test = self.pl.logprior(6.0, 6.0)
         assert prior_test == logmin
 
-    def _nonfinite_pars_prior(self, par1, par2):
-        self.pl.logprior(par1, par2)
-
 
     @raises(AssertionError)
-    def test_inf_pars_fails_prior(self):
+    def test_nonfinite_pars_fails_prior(self):
         hyperpars = {"alpha_min":1.0, "alpha_max":5.0,
                      "amplitude_min":-5.0, "amplitude_max":5.0}
         self.pl.set_prior(hyperpars)
-        for p1 in [2.0, np.nan, np.inf]:
-            for p2 in [np.inf, np.nan]:
-                print("p1: " + str(p1))
-                print("p2: " + str(p2))
-                yield self._nonfinite_pars_prior, p1, p2
-
+        for p1 in [2.0, np.inf, np.nan]:
+            for p2 in [np.nan, np.inf]:
+                self.pl.logprior(p1, p2)
 
 
 
