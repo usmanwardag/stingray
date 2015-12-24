@@ -245,8 +245,6 @@ class PowerLaw(ParametricModel):
 
         def logprior(alpha, amplitude):
 
-            print("alpha: " + str(alpha))
-            print("amplitude: " + str(amplitude))
             assert np.isfinite(alpha), "alpha must be finite!"
             assert np.isfinite(amplitude), "amplitude must be finite"
 
@@ -384,6 +382,11 @@ class BrokenPowerLaw(ParametricModel):
 
 
         def logprior(alpha1, alpha2, x_break, amplitude):
+
+            for p,n in zip([alpha1, alpha2, x_break, amplitude], self.parnames):
+                assert np.isfinite(p), "%s must be finite!"%n
+
+
             p_alpha1 = (alpha1 >= alpha1_min and alpha1 <= alpha1_max)/\
                        (alpha1_max-alpha1_min)
             p_amplitude = (amplitude >= amplitude_min and
@@ -426,6 +429,10 @@ class BrokenPowerLaw(ParametricModel):
 
         """
         ### compute bending factor
+
+        for p,n in zip([alpha1, alpha2, x_break, amplitude], self.parnames):
+            assert np.isfinite(p), "%s must be finite!"%n
+
         logz = (alpha2 - alpha1)*(np.log(x) - x_break)
 
         ### be careful with very large or very small values
