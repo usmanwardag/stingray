@@ -637,6 +637,16 @@ class FixedCentroidLorentzian(ParametricModel):
         y = Lorentzian().func(x, self.x0, gamma, amplitude)
         return y
 
+
+class Gaussian(ParametricModel):
+
+    def __init__(self):
+        ## TODO: make a Gaussian parametric model
+
+        pass
+
+
+
 class PowerLawConst(ParametricModel):
 
     def __init__(self, hyperpars=None):
