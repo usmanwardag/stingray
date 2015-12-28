@@ -89,8 +89,8 @@ class TestPSDPosterior(object):
         lpost = PSDPosterior(self.ps, self.model)
         #print(lpost.x)
         #print(self.ps.freq)
-        assert lpost.x.all() == self.ps.freq[1:].all()
-        assert lpost.y.all() == self.ps.ps[1:].all()
+        assert lpost.x.all() == self.ps.freq.all()
+        assert lpost.y.all() == self.ps.ps.all()
 
     @raises(AssertionError)
     def test_correct_number_of_parameters(self):
@@ -115,6 +115,19 @@ class TestPSDPosterior(object):
         loglike_test = lpost.loglikelihood(t0, neg=False)
 
         assert np.isclose(loglike, loglike_test)
+
+    @raises(AssertionError)
+    def test_loglikelihood_correctly_leaves_out_zeroth_freq(self):
+        t0 = [2.0]
+        m = self.model(self.ps.freq, t0)
+        loglike = -np.sum(self.ps.ps/m + np.log(m))
+
+        lpost = PSDPosterior(self.ps, self.model)
+        loglike_test = lpost.loglikelihood(t0, neg=False)
+
+        assert np.isclose(loglike_test, loglike, atol=1.e-10, rtol=1.e-10)
+
+
 
     def test_negative_loglikelihood(self):
         t0 = [2.0]
@@ -177,3 +190,6 @@ class TestPerPosteriorAveragedPeriodogram(object):
         m = self.model(self.ps.freq[1:], t0)
         ## TODO: Finish this test!
 
+
+## TODO: Write tests for Lightcurve posterior
+## TODO: Write tests for Gaussian posterior
