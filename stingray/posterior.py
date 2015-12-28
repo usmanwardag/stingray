@@ -112,13 +112,13 @@ class PSDPosterior(Posterior):
                for a maximum likelihood-style analysis, no prior is required.
 
         """
-        self.ps = ps
+
         self.m = ps.m
         Posterior.__init__(self, ps.freq, ps.ps, model)
 
 
 
-    def loglikelihood(self,t0, neg=False):
+    def loglikelihood(self, t0, neg=False):
         """
         The log-likelihood for the model defined in self.model
         and the parameters in t0. Uses an exponential model for
