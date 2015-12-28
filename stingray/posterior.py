@@ -1,6 +1,10 @@
 __all__ = ["Posterior", "PSDPosterior"]
 
 import numpy as np
+from scipy.special import gamma as scipy_gamma
+
+## TODO: Find out whether there is a gamma function in numpy!
+
 
 from stingray import Powerspectrum, AveragedPowerspectrum
 from stingray.parametricmodels import logmin
@@ -63,7 +67,8 @@ class PSDPosterior(Posterior):
             The model for the power spectrum. Note that in order to define
             the posterior properly, the ParametricModel subclass must be
             instantiated with the hyperpars parameter set, or there won't
-            be a prior to be calculated!
+            be a prior to be calculated! If all this object is used
+            for a maximum likelihood-style analysis, no prior is required.
 
 
         Attributes
@@ -86,12 +91,13 @@ class PSDPosterior(Posterior):
                The model for the power spectrum. Note that in order to define
                the posterior properly, the ParametricModel subclass must be
                instantiated with the hyperpars parameter set, or there won't
-               be a prior to be calculated!
+               be a prior to be calculated! If all this object is used
+               for a maximum likelihood-style analysis, no prior is required.
 
         """
         self.ps = ps
         self.m = ps.m
-        Posterior.__init__(self,ps.freq[1:], ps.ps[1:], model)
+        Posterior.__init__(self,ps.freq, ps.ps, model)
 
     def logprior(self, t0):
         """
@@ -137,25 +143,111 @@ class PSDPosterior(Posterior):
         assert np.size(t0) == self.model.npar, "Input parameters must" \
                                                " match model parameters!"
 
-        funcval = self.model(self.x, *t0)
+        funcval = self.model(self.x[1:], *t0)
 
         if self.m == 1:
-            res = -np.sum(np.log(funcval)) - np.sum(self.y/funcval)
+            res = -np.sum(np.log(funcval)) - np.sum(self.y[1:]/funcval)
         else:
             res = -2.0*self.m*(np.sum(np.log(funcval)) +
-                               np.sum(self.y/funcval) +
+                               np.sum(self.y[1:]/funcval) +
                                np.sum((2.0/float(2.*self.m) - 1.0)*
-                                      np.log(self.y)))
+                                      np.log(self.y[1:])))
 
         if np.isnan(res):
-            #print("res is nan")
             res = logmin
         elif res == np.inf or np.isfinite(res) == False:
-            #print("res is infinite!")
             res = logmin
 
         if neg:
             return -res
         else:
             return res
+
+
+
+class LightcurvePosterior(Posterior):
+
+    def __init__(self, lc, model):
+        """
+        Posterior for Poisson lightcurve data. Primary intended use is for
+        modelling X-ray light curves, but alternative uses are conceivable.
+
+        Parameters
+        ----------
+        lc: lightcurve.Lightcurve object
+            Object containing the light curve to be modelled
+
+        model: instance of any subclass of parameterclass.ParametricModel
+            The model for the power spectrum. Note that in order to define
+            the posterior properly, the ParametricModel subclass must be
+            instantiated with the hyperpars parameter set, or there won't
+            be a prior to be calculated! If all this object is used
+            for a maximum likelihood-style analysis, no prior is required.
+        Attributes
+        ----------
+        lc: lightcurve.Lightcurve instance
+            the Lightcurve object containing the data
+
+        x: numpy.ndarray
+            The independent variable (list of frequencies) stored in ps.freq
+
+        y: numpy.ndarray
+            The dependent variable (list of powers) stored in ps.ps
+
+        model: instance of any subclass of parameterclass.ParametricModel
+               The model for the power spectrum. Note that in order to define
+               the posterior properly, the ParametricModel subclass must be
+               instantiated with the hyperpars parameter set, or there won't
+               be a prior to be calculated! If all this object is used
+               for a maximum likelihood-style analysis, no prior is required.
+
+        """
+        self.lc = lc
+        Posterior.__init__(self, lc.time, lc.counts, model)
+
+
+
+    def logprior(self, t0):
+        """
+        The logarithm of the prior distribution for the
+        model defined in self.model.
+
+        Parameters:
+        ------------
+        t0: {list | numpy.ndarray}
+            The list with parameters for the model
+
+        Returns:
+        --------
+        logp: float
+            The logarithm of the prior distribution for the model and
+            parameters given.
+        """
+        assert hasattr(self.model, "logprior")
+        assert np.size(t0) == self.model.npar, "Input parameters must " \
+                                               "match model parameters!"
+
+        return self.model.logprior(*t0)
+
+
+    def loglikelihood(self, t0, neg=False):
+
+        assert np.size(t0) == self.model.npar, "Input parameters must" \
+                                               " match model parameters!"
+
+        funcval = self.model(self.x[1:], *t0)
+
+        res = -funcval + self.y*np.log(funcval) - scipy_gamma(self.y + 1.)
+
+        if np.isnan(res):
+            res = logmin
+        elif res == np.inf or np.isfinite(res) == False:
+            res = logmin
+
+        if neg:
+            return -res
+        else:
+            return res
+
+
 
