@@ -26,8 +26,26 @@ class Posterior(object):
         self.model = model
 
     def logprior(self, t0):
-        print("If you're calling this method, something is wrong!")
-        return 0.0
+        """
+        The logarithm of the prior distribution for the
+        model defined in self.model.
+
+        Parameters:
+        ------------
+        t0: {list | numpy.ndarray}
+            The list with parameters for the model
+
+        Returns:
+        --------
+        logp: float
+            The logarithm of the prior distribution for the model and
+            parameters given.
+        """
+        assert hasattr(self.model, "logprior")
+        assert np.size(t0) == self.model.npar, "Input parameters must " \
+                                               "match model parameters!"
+
+        return self.model.logprior(*t0)
 
 
     ### use standard definition of the likelihood as the product of all
@@ -97,29 +115,8 @@ class PSDPosterior(Posterior):
         """
         self.ps = ps
         self.m = ps.m
-        Posterior.__init__(self,ps.freq, ps.ps, model)
+        Posterior.__init__(self, ps.freq, ps.ps, model)
 
-    def logprior(self, t0):
-        """
-        The logarithm of the prior distribution for the
-        model defined in self.model.
-
-        Parameters:
-        ------------
-        t0: {list | numpy.ndarray}
-            The list with parameters for the model
-
-        Returns:
-        --------
-        logp: float
-            The logarithm of the prior distribution for the model and
-            parameters given.
-        """
-        assert hasattr(self.model, "logprior")
-        assert np.size(t0) == self.model.npar, "Input parameters must " \
-                                               "match model parameters!"
-
-        return self.model.logprior(*t0)
 
 
     def loglikelihood(self,t0, neg=False):
@@ -207,29 +204,6 @@ class LightcurvePosterior(Posterior):
 
 
 
-    def logprior(self, t0):
-        """
-        The logarithm of the prior distribution for the
-        model defined in self.model.
-
-        Parameters:
-        ------------
-        t0: {list | numpy.ndarray}
-            The list with parameters for the model
-
-        Returns:
-        --------
-        logp: float
-            The logarithm of the prior distribution for the model and
-            parameters given.
-        """
-        assert hasattr(self.model, "logprior")
-        assert np.size(t0) == self.model.npar, "Input parameters must " \
-                                               "match model parameters!"
-
-        return self.model.logprior(*t0)
-
-
     def loglikelihood(self, t0, neg=False):
 
         assert np.size(t0) == self.model.npar, "Input parameters must" \
@@ -249,5 +223,31 @@ class LightcurvePosterior(Posterior):
         else:
             return res
 
+
+
+class GaussianPosterior(Posterior):
+
+    def __init__(self, x, y, model):
+        """
+        A general class for two-dimensional data following a Gaussian
+        sampling distribution.
+
+        Parameters
+        ----------
+        x: numpy.ndarray
+            independent variable
+
+        y: numpy.ndarray
+            dependent variable
+
+        model: instance of any subclass of parameterclass.ParametricModel
+            The model for the power spectrum. Note that in order to define
+            the posterior properly, the ParametricModel subclass must be
+            instantiated with the hyperpars parameter set, or there won't
+            be a prior to be calculated! If all this object is used
+            for a maximum likelihood-style analysis, no prior is required.
+
+        """
+        Posterior.__init__(self, x, y, model)
 
 
