@@ -91,15 +91,12 @@ class TestPSDPosterior(object):
         #print(self.ps.freq)
         assert lpost.x.all() == self.ps.freq.all()
         assert lpost.y.all() == self.ps.ps.all()
-<<<<<<< a46062b8f6c885229681c7a85e2b3554873ce1a8
 
     @raises(AssertionError)
     def test_correct_number_of_parameters(self):
         lpost = PSDPosterior(self.ps, self.model)
         lpost([2,3])
 
-=======
->>>>>>> Added some todos
 
     @raises(AssertionError)
     def test_correct_number_of_parameters(self):
