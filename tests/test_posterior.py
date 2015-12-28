@@ -1,9 +1,12 @@
 import numpy as np
 import scipy.stats
 
+from nose.tools import eq_, raises
+
 from stingray import Powerspectrum
 from stingray import Posterior, PSDPosterior
 from stingray import Const
+
 
 np.random.seed(20150907)
 
@@ -54,7 +57,7 @@ class TestPosterior(object):
 
 
 
-class TestPerPosterior(object):
+class TestPSDPosterior(object):
 
     def setUp(self):
         m = 1
@@ -76,12 +79,24 @@ class TestPerPosterior(object):
         self.model = Const(hyperpars={"a_mean":self.a_mean, "a_var":self.a_var})
 
 
+    @raises(AssertionError)
+    def test_logprior_fails_without_prior(self):
+        model = Const()
+        lpost = PSDPosterior(self.ps, model)
+        lpost.logprior([1])
+
     def test_making_posterior(self):
         lpost = PSDPosterior(self.ps, self.model)
-        print(lpost.x)
-        print(self.ps.freq)
+        #print(lpost.x)
+        #print(self.ps.freq)
         assert lpost.x.all() == self.ps.freq[1:].all()
         assert lpost.y.all() == self.ps.ps[1:].all()
+
+    @raises(AssertionError)
+    def test_correct_number_of_parameters(self):
+        lpost = PSDPosterior(self.ps, self.model)
+        lpost([2,3])
+
 
     def test_logprior(self):
         t0 = [2.0]
