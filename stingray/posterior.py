@@ -113,14 +113,7 @@ class PSDPosterior(Posterior):
         """
         self.ps = ps
         self.m = ps.m
-        Posterior.__init__(self,ps.freq, ps.ps, model)
-
-    def logprior(self, t0):
-        """
-        The logarithm of the prior distribution for the
-        model defined in self.model.
-	"""
-
+        Posterior.__init__(self, ps.freq, ps.ps, model)
 
 
     def loglikelihood(self, t0, neg=False):
@@ -205,29 +198,6 @@ class LightcurvePosterior(Posterior):
         self.lc = lc
         Posterior.__init__(self, lc.time, lc.counts, model)
 
-
-
-    def logprior(self, t0):
-        """
-        The logarithm of the prior distribution for the
-        model defined in self.model.
-
-        Parameters:
-        ------------
-        t0: {list | numpy.ndarray}
-            The list with parameters for the model
-
-        Returns:
-        --------
-        logp: float
-            The logarithm of the prior distribution for the model and
-            parameters given.
-        """
-        assert hasattr(self.model, "logprior")
-        assert np.size(t0) == self.model.npar, "Input parameters must " \
-                                               "match model parameters!"
-
-        return self.model.logprior(*t0)
 
 
     def loglikelihood(self, t0, neg=False):
