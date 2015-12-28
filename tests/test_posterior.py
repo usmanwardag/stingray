@@ -95,6 +95,12 @@ class TestPSDPosterior(object):
         lpost([2,3])
 
 
+    @raises(AssertionError)
+    def test_correct_number_of_parameters(self):
+        lpost = PSDPosterior(self.ps, self.model)
+        lpost([2,3])
+
+
     def test_logprior(self):
         t0 = [2.0]
 
