@@ -196,6 +196,5 @@ class TestPerPosteriorAveragedPeriodogram(object):
         m = self.model(self.ps.freq[1:], t0)
         ## TODO: Finish this test!
 
-
 ## TODO: Write tests for Lightcurve posterior
 ## TODO: Write tests for Gaussian posterior
