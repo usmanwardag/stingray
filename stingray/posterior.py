@@ -270,4 +270,3 @@ class GaussianPosterior(Posterior):
             return -res
         else:
             return res
-
