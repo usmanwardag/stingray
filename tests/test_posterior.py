@@ -7,7 +7,6 @@ from stingray import Powerspectrum
 from stingray import Posterior, PSDPosterior
 from stingray import Const
 
-
 np.random.seed(20150907)
 
 
@@ -91,6 +90,12 @@ class TestPSDPosterior(object):
         #print(self.ps.freq)
         assert lpost.x.all() == self.ps.freq.all()
         assert lpost.y.all() == self.ps.ps.all()
+
+    @raises(AssertionError)
+    def test_correct_number_of_parameters(self):
+        lpost = PSDPosterior(self.ps, self.model)
+        lpost([2,3])
+
 
     @raises(AssertionError)
     def test_correct_number_of_parameters(self):
