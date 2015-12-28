@@ -175,5 +175,5 @@ class TestPerPosteriorAveragedPeriodogram(object):
     def test_likelihood(self):
         t0 = [2.0]
         m = self.model(self.ps.freq[1:], t0)
-
+        ## TODO: Finish this test!
 
