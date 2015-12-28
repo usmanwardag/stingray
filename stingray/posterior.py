@@ -110,7 +110,7 @@ class PSDPosterior(Posterior):
                for a maximum likelihood-style analysis, no prior is required.
 
         """
-        self.ps = ps
+
         self.m = ps.m
         Posterior.__init__(self, ps.freq, ps.ps, model)
 
