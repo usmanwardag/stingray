@@ -8,6 +8,13 @@ from stingray.parametricmodels import logmin
 class Posterior(object):
 
     def __init__(self,x, y, model):
+        """
+
+
+
+        """
+
+
         self.x = x
         self.y = y
 
@@ -24,13 +31,17 @@ class Posterior(object):
         print("If you're calling this method, something is wrong!")
         return 0.0
 
-    def __call__(self, t0, neg=False):
-        lpost = self.loglikelihood(t0) + self.logprior(t0)
 
+    def logposterior(self, t0, neg=False):
+        lpost = self.loglikelihood(t0) + self.logprior(t0)
         if neg == True:
             return -lpost
         else:
             return lpost
+
+    def __call__(self, t0, neg=False):
+        return self.logposterior(t0, neg=neg)
+
 
 
 class PSDPosterior(Posterior):
