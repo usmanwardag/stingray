@@ -139,7 +139,7 @@ class PSDPosterior(Posterior):
 
         return self.model.logprior(*t0)
 
-    def loglikelihood(self,t0, neg=False):
+    def loglikelihood(self, t0, neg=False):
         """
         The log-likelihood for the model defined in self.model
         and the parameters in t0. Uses an exponential model for
