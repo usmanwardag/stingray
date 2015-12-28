@@ -119,7 +119,6 @@ class PSDPosterior(Posterior):
         Posterior.__init__(self, ps.freq, ps.ps, model)
 
 
-
     def loglikelihood(self,t0, neg=False):
         """
         The log-likelihood for the model defined in self.model
