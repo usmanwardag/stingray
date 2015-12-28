@@ -1,4 +1,5 @@
-__all__ = ["Posterior", "PSDPosterior"]
+__all__ = ["Posterior", "PSDPosterior",
+           "LightcurvePosterior", "GaussianPosterior"]
 
 import numpy as np
 from scipy.special import gamma as scipy_gamma
