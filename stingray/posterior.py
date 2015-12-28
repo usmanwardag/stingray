@@ -251,3 +251,24 @@ class GaussianPosterior(Posterior):
         Posterior.__init__(self, x, y, model)
 
 
+    def loglikelihood(self, t0, neg=False):
+
+        assert np.size(t0) == self.model.npar, "Input parameters must" \
+                                               " match model parameters!"
+
+        funcval = self.model(self.x[1:], *t0)
+
+        #res = -funcval + self.y*np.log(funcval) - scipy_gamma(self.y + 1.)
+        ## TODO: Add Gaussian likelihood
+        res = 1.0
+
+
+        if np.isnan(res):
+            res = logmin
+        elif res == np.inf or np.isfinite(res) == False:
+            res = logmin
+
+        if neg:
+            return -res
+        else:
+            return res
