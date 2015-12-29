@@ -13,7 +13,7 @@ import scipy.stats
 import scipy.signal
 import copy
 
-from .parametricmodels import FixedCentroidQPO, CombinedModel
+from .parametricmodels import FixedCentroidLorentzian, CombinedModel
 
 from . import PSDPosterior
 
