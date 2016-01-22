@@ -1,4 +1,7 @@
 
+__all__ = ["RegressionResults", "Regression", "PSDRegression"]
+
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:
@@ -51,7 +54,7 @@ class RegressionResults(object):
         """
         self.neg = neg
         self.result = res.fun
-        self.p_opt = res.opt
+        self.p_opt = res.x
         self.model = lpost.model
 
 
@@ -63,8 +66,8 @@ class RegressionResults(object):
     def _compute_covariance(self, lpost, res):
 
         if hasattr(res, "hess_inv"):
-            self.cov = res.hess_inv
-            self.err = np.sqrt(np.diag(res.hess_inv))
+            self.cov = np.asarray(res.hess_inv)
+            self.err = np.sqrt(np.diag(self.cov))
         else:
             ### calculate Hessian approximating with finite differences
             print("Approximating Hessian with finite differences ...")
@@ -144,7 +147,7 @@ class RegressionResults(object):
 
 class Regression(object):
     """ Maximum Likelihood Superclass. """
-    def __init__(self, fitmethod='L-BFGS-B', max_post=True):
+    def __init__(self, fitmethod='BFGS', max_post=True):
         """
         Linear regression of two-dimensional data.
         Note: optimization with bounds is not supported. If something like
@@ -206,20 +209,19 @@ class Regression(object):
             if i > 20:
                 raise Exception("Fitting unsuccessful!")
             ### perturb parameters slightly
-            t0_p = np.random.multivariate_normal(t0, np.diag(np.abs(t0)/10.))
+            t0_p = np.random.multivariate_normal(t0, np.diag(np.abs(t0)/100.))
 
             ## if max_post is True, do the Maximum-A-Posteriori Fit
             if self.max_post:
                 opt = scipy.optimize.minimize(lpost, t0_p,
                                               method=self.fitmethod,
-                                              args=args)
+                                              args=args, tol=1.e-10)
 
             ## if max_post is False, then do a Maximum Likelihood Fit
             else:
                 opt = scipy.optimize.minimize(lpost.loglikelihood, t0_p,
                                               method=self.fitmethod,
-                                              args=args)
-
+                                              args=args, tol=1.e-10)
 
 
             funcval = opt.fun
@@ -259,7 +261,7 @@ class PSDRegression(Regression):
     ### obs= if True, compute covariances and print summary to screen
     ###    
 
-    def __init__(self, ps, fitmethod='L-BFGS-B', max_post=True):
+    def __init__(self, ps, fitmethod='BFGS', max_post=True):
 
         self.ps = ps
         Regression.__init__(self, fitmethod=fitmethod, max_post=max_post)
@@ -267,7 +269,7 @@ class PSDRegression(Regression):
 
     def fit(self, model, t0, neg=True):
 
-        self.lpost = PSDPosterior(self.ps, model, m=self.ps.m)
+        self.lpost = PSDPosterior(self.ps, model)
         res = Regression.fit(self, self.lpost, t0, neg=neg)
 
         res.maxpow, res.maxfreq, res.maxind = \
@@ -288,7 +290,7 @@ class PSDRegression(Regression):
 
     def _compute_highest_outlier(self, lpost, res, nmax=1):
 
-        residuals = 2.0*lpost.y[:1]/res.mfit
+        residuals = 2.0*lpost.y[1:]/res.mfit[1:]
 
 #        if nmax > 1:
 
@@ -309,7 +311,7 @@ class PSDRegression(Regression):
         return max_y, max_x, max_ind
 
     def _find_outlier(self, xdata, ratio, max_y):
-        max_ind = np.where(ratio == max_y)[0]+1
+        max_ind = np.where(ratio == max_y)[0][0]+1
         #if np.size(max_ind) == 0:
         #    max_ind = None
         #    max_x = None
