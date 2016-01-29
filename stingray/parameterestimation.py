@@ -1,12 +1,33 @@
 
-__all__ = ["RegressionResults", "Regression", "PSDRegression"]
+__all__ = ["OptimizationResults", "ParameterEstimation", "PSDParEst"]
 
 
+## check whether matplotlib is installed for easy plotting
 try:
     import matplotlib.pyplot as plt
+    from matplotlib.ticker import MaxNLocator
+    can_plot = True
 except ImportError:
     can_plot = False
 
+## check whether emcee is installed for sampling
+try:
+    import emcee
+    can_plot = True
+except ImportError:
+    can_sample = False
+
+try:
+    import corner
+    use_corner =True
+except ImportError:
+    use_corner=False
+
+try:
+    import seaborn as sns
+    use_seaborn = True
+except ImportError:
+    use_seaborn = False
 
 #### GENERAL IMPORTS ###
 import numpy as np
@@ -16,9 +37,6 @@ import scipy.stats
 import scipy.signal
 import copy
 
-from .parametricmodels import FixedCentroidLorentzian, CombinedModel
-
-from . import PSDPosterior
 
 try:
     from statsmodels.tools.numdiff import approx_hess
@@ -28,12 +46,10 @@ except ImportError:
 
 
 ### own imports
-from . import Lightcurve
-from . import Powerspectrum
-from . import PSDPosterior, LightcurvePosterior, GaussianPosterior
+from . import PSDPosterior
 
 
-class RegressionResults(object):
+class OptimizationResults(object):
 
 
     def __init__(self, lpost, res, neg=True):
@@ -59,9 +75,9 @@ class RegressionResults(object):
 
 
         self._compute_covariance(lpost, res)
-        self._compute_model(lpost, res)
-        self._compute_criteria(lpost, res)
-        self._compute_statistics(lpost, res)
+        self._compute_model(lpost)
+        self._compute_criteria(lpost)
+        self._compute_statistics(lpost)
 
     def _compute_covariance(self, lpost, res):
 
@@ -76,11 +92,11 @@ class RegressionResults(object):
             self.cov = np.linalg.inv(phess)
             self.err = np.sqrt(np.diag(self.cov))
 
-    def _compute_model(self, lpost, res):
+    def _compute_model(self, lpost):
         self.mfit = lpost.model(lpost.x, *self.p_opt)
 
 
-    def _compute_criteria(self, lpost, res):
+    def _compute_criteria(self, lpost):
 
         self.deviance = -2.0*lpost.loglikelihood(self.p_opt, neg=False)
 
@@ -93,11 +109,11 @@ class RegressionResults(object):
         ### Deviance Information Criterion
         ## TODO: Add Deviance Information Criterion
 
-    def _compute_statistics(self, lpost, res):
+    def _compute_statistics(self, lpost):
         try:
             self.mfit
         except AttributeError:
-            self._compute_model(lpost, res)
+            self._compute_model(lpost)
 
         self.merit = np.sum(((lpost.y-self.mfit)/self.mfit)**2.0)
         self.dof = lpost.y.shape[0] - float(self.p_opt.shape[0])
@@ -105,12 +121,12 @@ class RegressionResults(object):
         self.ssd = np.sqrt(2.0*self.sexp)
         self.sobs = np.sum(lpost.y-self.mfit)
 
-    def print_summary(self, lpost, res):
+    def print_summary(self, lpost):
 
         print("The best-fit model parameters plus errors are:")
-        for i,(x,y, p) in enumerate(zip(self.popt, self.err,
+        for i,(x,y, p) in enumerate(zip(self.p_opt, self.err,
                                         lpost.model.parnames)):
-            print("%i) Parameter %s: %.5f +/i %.f5"%(i, p, x, y))
+            print("%i) Parameter %s: %.5f +/- %.f5"%(i, p, x, y))
 
         print("\n")
 
@@ -120,7 +136,7 @@ class RegressionResults(object):
         try:
             self.deviance
         except AttributeError:
-            self._compute_criteria(lpost, res)
+            self._compute_criteria(lpost)
 
         print(" -- Deviance [-2 log L] D = " + str(self.deviance))
         print(" -- The Akaike Information Criterion of the model is: " +
@@ -132,7 +148,7 @@ class RegressionResults(object):
         try:
             self.merit
         except AttributeError:
-            self._compute_statistics(lpost, res)
+            self._compute_statistics(lpost)
 
         print(" -- The figure-of-merit function for this model is: " +
               str(self.merit) +
@@ -145,11 +161,12 @@ class RegressionResults(object):
 
         return
 
-class Regression(object):
-    """ Maximum Likelihood Superclass. """
+class ParameterEstimation(object):
+
     def __init__(self, fitmethod='BFGS', max_post=True):
         """
-        Linear regression of two-dimensional data.
+        Parameter estimation of two-dimensional data, either via
+        optimization or MCMC.
         Note: optimization with bounds is not supported. If something like
         this is required, define (uniform) priors in the ParametricModel
         instances to be used below.
@@ -228,7 +245,7 @@ class Regression(object):
             i+= 1
 
 
-        res = RegressionResults(lpost, opt, neg=neg)
+        res = OptimizationResults(lpost, opt, neg=neg)
 
         return res
 
@@ -253,9 +270,277 @@ class Regression(object):
 
         return lrt
 
+    def sample(self, lpost, t0,
+               nwalkers=500, niter=100, burnin=100, threads=1,
+               print_results=True, plot=False, namestr="test"):
+        """
+        Sample the posterior distribution defined in `lpost` using MCMC.
+        Here we use the `emcee` package, but other implementations could
+        in principle be used.
+
+        Parameters
+        ----------
+        lpost : Posterior object
+            The object containing the definition of the posterior, the
+            parametric model and the data.
+
+        t0 : iterable
+            list or array containing the starting parameters. Its length
+            must match `lpost.model.npar`.
+
+        nwalkers : int
+            The number of walkers (chains) to use during the MCMC procedure.
+            The more walkers are used, the slower the estimation will be, but
+            the better the final distribution is likely to be.
+
+        niter : int
+            The number of iterations to run the MCMC chains for. The larger this
+            number, the longer the estimation will take, but the higher the
+            chance that the walkers have actually converged on the true
+            posterior distribution.
+
+        burnin : int
+            The number of iterations to run the walkers before convergence is
+            assumed to have occurred. This part of the chain will be discarded
+            before sampling from what is then assumed to be the posterior
+            distribution desired.
+
+        threads : int
+            The number of threads for parallelization.
+            Default is 1, i.e. no parallelization
+
+        print_results : bool
+            Boolean flag setting whether the results of the MCMC run should
+            be printed to standard output. Default: True
+
+        plot : bool
+            Boolean flag setting whether summary plots of the MCMC chains chould be
+            produced. Default: False
+
+        namestr : str
+            Optional string for output file names for the plotting.
+
+        Returns
+        -------
+
+        res : SamplingResults object
+
+        """
+        assert can_sample is True, "emcee not installed! Can't sample!"
+
+        ndim = t0
+
+        ## do a MAP fitting step to find good starting positions for
+        ## the sampler
+        res = self.fit(lpost, t0, neg=True)
+
+        ## sample random starting positions for each walker from
+        ## a multivariate Gaussian
+        p0 = np.array([np.random.multivariate_normal(res.p_opt, res.cov) for \
+              i in range(nwalkers)])
+
+        ## initialize the sampler
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, lpost, args=[False])
+
+        ## run the burn-in
+        pos, prob, state = sampler.run_mcmc(p0, burnin)
+
+        sampler.reset()
+
+        ## do the actual MCMC run
+        sampler.run_mcmc(pos, niter, rstate0=state)
+
+        res = SamplingResults(sampler)
+
+        if print_results:
+            res.print_results()
+
+        if plot:
+            res.plot_results(namestr + "_corner.pdf")
 
 
-class PSDRegression(Regression):
+        return res
+
+class SamplingResults(object):
+
+    def __init__(self, sampler, ci_min=0.05, ci_max=0.95):
+        """
+        Helper class that will contain the results of the sampling
+        in a handly format.
+        Less fiddly than a dictionary.
+
+        Parameters
+        ----------
+        sampler: emcee.EnsembleSampler object
+            The object containing the sampler that's done all the work.
+
+        ci_min: float out of [0,1]
+            The lower bound percentile for printing confidence intervals
+            on the parameters
+
+        ci_max: float out of [0,1]
+            The upper bound percentile for printing confidence intervals
+            on the parameters
+
+        """
+
+        ## store all the samples
+        self.samples = sampler.flatchain
+
+        self.nwalkers = np.float(sampler.chain.shape[0])
+        self.niter = np.float(sampler.iterations)
+
+        ## store number of dimensions
+        self.ndim = sampler.dim
+
+        ## compute and store acceptance fraction
+        self.acceptance = np.nanmean(sampler.acceptance_fraction)
+        self.L = self.acceptance*self.samples.shape[0]
+
+        self._check_convergence(sampler)
+        self._infer(ci_min, ci_max)
+
+    def _check_convergence(self, sampler):
+
+        ## compute and store autocorrelation time
+        self.acor = sampler.acor
+
+        self.rhat = self._compute_rhat(sampler)
+
+
+    def _compute_rhat(self, sampler):
+
+        rh = np.zeros(self.ndim)
+
+        #### between-sequence variance
+        #
+        ## mean over iterations:(self.nwalkers, self.ndim)
+        mean_samples_iter = np.nanmean(sampler.chain, axis=1)
+
+        ## mean over the means over iterations: (self.ndim)
+        mean_samples = np.nanmean(sampler.chain, axis=(0,1))
+
+        ## now compute between-sequence variance
+        bb = (self.niter/(self.nwalkers-1))*\
+             np.sum((mean_samples_iter-mean_samples)**2., axis=0)
+
+        ## compute variance of each chain
+        var_samples = np.nanvar(sampler.chain, axis=1)
+        ## compute mean of variance
+        ww = np.nanmean(var_samples, axis=0)
+
+        ## compute weighted average of ww and bb:
+        rhat = ((self.niter-1)/self.niter)*ww + (1/self.niter)*bb
+
+        return rhat
+
+    def _infer(self, ci_min=0.05, ci_max=0.95):
+        self.mean = np.mean(self.samples, axis=0)
+        self.std = np.std(self.samples, axis=0)
+        self.ci = np.percentile(self.samples, [ci_min, ci_max], axis=0)
+
+    def print_results(self):
+        """
+        Print results of the MCMC run.
+
+        """
+
+        print("-- The acceptance fraction is: " + str(self.acceptance))
+        print("-- The autocorrelation time is: " + str(self.acor))
+
+        print("R_hat for the parameters is: " + str(self.rhat))
+
+        ### print to screen
+        print("-- Posterior Summary of Parameters: \n")
+        print("parameter \t mean \t\t sd \t\t 5% \t\t 95% \n")
+        print("---------------------------------------------\n")
+        for i in range(self.ndim):
+            print("theta[" + str(i) + "] \t " +
+                  str(self.mean[i]) + "\t" + str(self.std[i]) + "\t" +
+                  str(self.ci[0,i]) + "\t" + str(self.ci[1,i]) + "\n" )
+
+
+    def plot_results(self, filename, nsamples=1000):
+        """
+        Plot some results in a triangle plot.
+        If installed, will use `corner` for the plotting
+        (available here https://github.com/dfm/corner.py or
+        through pip), if not, uses its own code to make a triangle
+        plot.
+
+        Parameters
+        ----------
+
+        filename: str
+            Name of the output file with the figure
+        nsamples: int
+            The maximum number of samples used for plotting.
+
+        """
+        assert can_plot, "Need to have matplotlib installed for plotting"
+        if use_corner:
+            corner.corner(self.samples, labels=[],
+                         quantiles=[0.16, 0.5, 0.84],
+                         show_titles=True, title_args={"fontsize": 12})
+
+        else:
+            fig = plt.figure(figsize=(15,15))
+            plt.subplots_adjust(top=0.925, bottom=0.025,
+                                left=0.025, right=0.975,
+                                wspace=0.2, hspace=0.2)
+
+            ind_all = np.random.choice(np.arange(self.samples.shape[0]),
+                                       size=nsamples)
+            samples = self.samples[ind_all]
+            for i in range(self.ndim):
+                for j in range(self.ndim):
+                    xmin, xmax = samples[:,j].min(), \
+                                 samples[:,j].max()
+                    ymin, ymax = samples[:,i].min(), \
+                                 samples[:,i].max()
+                    ax = fig.add_subplot(self.ndim,self.ndim,i*self.ndim+j+1)
+
+                    ax.xaxis.set_major_locator(MaxNLocator(5))
+                    ax.ticklabel_format(style="sci", scilimits=(-2,2))
+
+                    if i == j:
+                        #pass
+                        ntemp, binstemp, patchestemp = \
+                            ax.hist(samples[:,i], 30, normed=True,
+                                    histtype='stepfilled')
+                        #n.append(ntemp)
+                        #bins.append(binstemp)
+                        #patches.append(patchestemp)
+                        ax.axis([ymin, ymax, 0, max(ntemp)*1.2])
+
+                    else:
+
+                        ax.axis([xmin, xmax, ymin, ymax])
+
+                        ### make a scatter plot first
+                        ax.scatter(samples[:,j], samples[:,i], s=7)
+                        ### then add contours
+                        xmin, xmax = samples[:,j].min(), samples[:,j].max()
+                        ymin, ymax = samples[:,i].min(), samples[:,i].max()
+
+                        ### Perform Kernel density estimate on data
+                        try:
+                            X,Y = np.mgrid[xmin:xmax:100j, ymin:ymax:100j]
+                            positions = np.vstack([X.ravel(), Y.ravel()])
+                            values = np.vstack([samples[:,j], samples[:,i]])
+                            kernel = scipy.stats.gaussian_kde(values)
+                            Z = np.reshape(kernel(positions).T, X.shape)
+
+                            ax.contour(X,Y,Z,7)
+                        except ValueError:
+                            print("Not making contours.")
+
+        plt.savefig(filename, format='pdf')
+        plt.close()
+        return
+
+
+class PSDParEst(ParameterEstimation):
 
     ### ps = PowerSpectrum object with periodogram
     ### obs= if True, compute covariances and print summary to screen
@@ -264,13 +549,13 @@ class PSDRegression(Regression):
     def __init__(self, ps, fitmethod='BFGS', max_post=True):
 
         self.ps = ps
-        Regression.__init__(self, fitmethod=fitmethod, max_post=max_post)
+        ParameterEstimation.__init__(self, fitmethod=fitmethod, max_post=max_post)
 
 
     def fit(self, model, t0, neg=True):
 
         self.lpost = PSDPosterior(self.ps, model)
-        res = Regression.fit(self, self.lpost, t0, neg=neg)
+        res = ParameterEstimation.fit(self, self.lpost, t0, neg=neg)
 
         res.maxpow, res.maxfreq, res.maxind = \
             self._compute_highest_outlier(self.lpost, res)
@@ -283,7 +568,7 @@ class PSDRegression(Regression):
         lpost1 = PSDPosterior(self.ps, model1, m=self.ps.m)
         lpost2 = PSDPosterior(self.ps, model2, m=self.ps.m)
 
-        lrt = Regression.compute_lrt(self, lpost1, t1, lpost2, t2)
+        lrt = ParameterEstimation.compute_lrt(self, lpost1, t1, lpost2, t2)
 
         return lrt
 
