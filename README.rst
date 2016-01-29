@@ -15,19 +15,41 @@ Authors
 Contents
 --------
 
-The contents will be:
-
+Currently implemented:
 - make a light curve from event data
 - make periodograms in Leahy and rms normalization
 - average periodograms
-- cross spectra and lags (time vs energy, time vs frequency)
 - maximum likelihood fitting of periodograms/parametric models
+
+To be added soon:
+- cross spectra and lags (time vs energy, time vs frequency)
 - bispectra (?)
 - cross correlation functions, coherence
 - spectral-timing functionality
 - Bayesian QPO searches
 - power colours
 - rms spectra
+
+Prerequisites
+-------------
+
+Stingray is designed to be able to run with a minimum 
+of dependencies, but certain functionality depends on 
+additional packages.
+
+Required prerequisites are:
+- numpy (version?)
+- scipy (version?)
+
+Additional packages that can be helpful for certain 
+functions, but are not strictly required:
+
+- testing: nosetests (HIGHLY RECOMMENDED) --> (LINK)
+- documentation: sphinx (HIGHLY RECOMMENDED) --> (LINK)
+- plotting: matplotlib (add link)
+- corner plots: corner.py (add link)
+- sampling: emcee (add link)
+
 
 Documentation
 -------------
