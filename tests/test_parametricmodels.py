@@ -46,6 +46,12 @@ class TestParametricModel(object):
         name = 2
         p = ParametricModel(npar, name)
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> f97f9a50cb00a094a32e95cee7841db3b279c0bf
 class TestConstModel(object):
 
     def setUp(self):
@@ -193,6 +199,7 @@ class TestBentPowerLawModel(object):
         ## TODO: Need to write a meaningful test for this
         pass
 
+<<<<<<< HEAD
     @raises(AssertionError)
     def test_func_fails_when_not_finite(self):
         for alpha1 in [2.0, np.nan, np.inf]:
@@ -251,6 +258,8 @@ class TestBentPowerLawModel(object):
                 for x_break in [2.0, np.nan, np.inf]:
                     for amplitude in [np.inf, np.nan]:
                         self.bpl.logprior(alpha1, alpha2, x_break, amplitude)
+=======
+>>>>>>> f97f9a50cb00a094a32e95cee7841db3b279c0bf
 
 
 
@@ -341,6 +350,7 @@ class TestLorentzianModel(object):
             assert np.allclose(qpo_func(x, gamma, amplitude, x0),
                                self.lorentzian(x, x0, gamma, amplitude),
                                atol=1.e-10)
+<<<<<<< HEAD
     
     @raises(AssertionError)
     def test_func_fails_when_not_finite(self):
@@ -360,6 +370,8 @@ class TestLorentzianModel(object):
                      "amplitude_min":-5.0, "amplitude_max":5.0}
         self.lorentzian.set_prior(hyperpars)
         self.lorentzian.logprior(2.0, -1.0, 1.0)
+=======
+>>>>>>> f97f9a50cb00a094a32e95cee7841db3b279c0bf
 
     @raises(AssertionError)
     def test_func_fails_when_not_finite(self):
@@ -491,6 +503,7 @@ class TestFixedCentroidLorentzianModel(object):
 
 ## TODO: Need to write tests for PowerLawConst and BrokenPowerLawConst
 
+<<<<<<< HEAD
     def test_prior_works(self):
         hyperpars = {"x0_min":1.0, "x0_max":5.0,
                      "gamma_min":-2.0, "gamma_max":2.0,
@@ -601,6 +614,8 @@ class TestFixedCentroidLorentzianModel(object):
 
 ## TODO: Need to write tests for PowerLawConst and BrokenPowerLawConst
 
+=======
+>>>>>>> f97f9a50cb00a094a32e95cee7841db3b279c0bf
 class TestCombinedModels(object):
 
     def setUp(self):

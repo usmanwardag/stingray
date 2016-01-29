@@ -95,12 +95,15 @@ class TestPSDPosterior(object):
         lpost([2,3])
 
 
+<<<<<<< HEAD
     @raises(AssertionError)
     def test_correct_number_of_parameters(self):
         lpost = PSDPosterior(self.ps, self.model)
         lpost([2,3])
 
 
+=======
+>>>>>>> f97f9a50cb00a094a32e95cee7841db3b279c0bf
     def test_logprior(self):
         t0 = [2.0]
 
@@ -131,6 +134,10 @@ class TestPSDPosterior(object):
         assert np.isclose(loglike_test, loglike, atol=1.e-10, rtol=1.e-10)
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> f97f9a50cb00a094a32e95cee7841db3b279c0bf
     def test_negative_loglikelihood(self):
         t0 = [2.0]
         m = self.model(self.ps.freq[1:], t0)
