@@ -7,6 +7,7 @@ from stingray import ParametricModel, Const
 from stingray import PowerLaw, BrokenPowerLaw
 from stingray import Lorentzian, FixedCentroidLorentzian
 from stingray import CombinedModel
+from stingray import range
 
 logmin = parametricmodels.logmin
 
