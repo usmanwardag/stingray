@@ -62,10 +62,6 @@ class Posterior(object):
         return self.logposterior(t0, neg=neg)
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> f97f9a50cb00a094a32e95cee7841db3b279c0bf
 class PSDPosterior(Posterior):
 
     def __init__(self, ps, model):
@@ -113,18 +109,10 @@ class PSDPosterior(Posterior):
                for a maximum likelihood-style analysis, no prior is required.
 
         """
-<<<<<<< HEAD
-
-=======
->>>>>>> f97f9a50cb00a094a32e95cee7841db3b279c0bf
         self.m = ps.m
         Posterior.__init__(self, ps.freq, ps.ps, model)
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> f97f9a50cb00a094a32e95cee7841db3b279c0bf
     def loglikelihood(self, t0, neg=False):
         """
         The log-likelihood for the model defined in self.model
@@ -167,10 +155,6 @@ class PSDPosterior(Posterior):
             return res
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> f97f9a50cb00a094a32e95cee7841db3b279c0bf
 class LightcurvePosterior(Posterior):
 
     def __init__(self, lc, model):
