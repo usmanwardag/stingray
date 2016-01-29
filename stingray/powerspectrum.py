@@ -371,9 +371,6 @@ class Powerspectrum(object):
             The fractional rms amplitude contained between min_freq and
             max_freq
 
-        rms_error: float
-            The error in the fractional rms amplitude
-
         """
         #assert min_freq >= self.freq[0], "Lower frequency bound must be " \
         #                                 "larger or equal the minimum " \
