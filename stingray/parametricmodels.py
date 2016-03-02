@@ -572,7 +572,7 @@ class Lorentzian(ParametricModel):
         gamma = np.exp(gamma)
         amplitude = np.exp(amplitude)
 
-        alpha = 0.5*amplitude*gamma/np.pi
+        alpha = 0.5*amplitude/(gamma*np.pi)
         y = alpha/((x - x0)**2.0 + (0.5*gamma)**2.0)
         return y
 
