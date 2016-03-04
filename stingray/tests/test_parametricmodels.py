@@ -97,7 +97,6 @@ class TestConstModel(object):
         self.const.set_prior(hyperpars)
         self.const.logprior(np.inf)
 
-
     @raises(AssertionError)
     def test_nan_pars_fails_prior(self):
         hyperpars =  {"a_mean":2.0, "a_var":0.2}
@@ -124,7 +123,6 @@ class TestPowerLawModel(object):
 
         for x in range(1,10):
             eq_(pl_eqn(x, alpha, amplitude), self.pl(x, alpha, amplitude))
-
 
     @raises(AssertionError)
     def test_func_fails_when_not_finite(self):
@@ -162,7 +160,6 @@ class TestPowerLawModel(object):
         prior_test = self.pl.logprior(6.0, 6.0)
         assert prior_test == logmin
 
-
     @raises(AssertionError)
     def test_nonfinite_pars_fails_prior(self):
         hyperpars = {"alpha_min":1.0, "alpha_max":5.0,
@@ -179,7 +176,6 @@ class TestBentPowerLawModel(object):
         self.x = np.linspace(0.1,10, 100)
         self.bpl = BrokenPowerLaw()
 
-
     def test_shape(self):
         alpha1 = 1.0
         amplitude = 3.0
@@ -188,7 +184,6 @@ class TestBentPowerLawModel(object):
 
         c = self.bpl(self.x, alpha1, amplitude, alpha2, x_break)
         assert c.shape == self.x.shape
-
 
     def test_value(self):
         ## TODO: Need to write a meaningful test for this
@@ -206,7 +201,6 @@ class TestBentPowerLawModel(object):
     def test_hyperparameters_not_set(self):
         self.bpl.logprior
 
-
     def test_hyperparameters(self):
         #hyperparameters
         hyperpars = {"alpha1_min":1.0, "alpha1_max":5.0,
@@ -239,7 +233,6 @@ class TestBentPowerLawModel(object):
         prior_test = self.bpl.logprior(2.0, 2.0, 0.0, 10.0)
         assert prior_test == logmin
 
-
     @raises(AssertionError)
     def test_nonfinite_pars_fails_prior(self):
         hyperpars = {"alpha1_min":1.0, "alpha1_max":5.0,
@@ -252,129 +245,6 @@ class TestBentPowerLawModel(object):
                 for x_break in [2.0, np.nan, np.inf]:
                     for amplitude in [np.inf, np.nan]:
                         self.bpl.logprior(alpha1, alpha2, x_break, amplitude)
-
-
-
-    @raises(AssertionError)
-    def test_func_fails_when_not_finite(self):
-        for alpha1 in [2.0, np.nan, np.inf]:
-            for alpha2 in [np.inf, np.nan]:
-                for x_break in [2.0, np.nan, np.inf]:
-                    for amplitude in [np.inf, np.nan]:
-                        self.bpl(self.x, alpha1, alpha2, x_break, amplitude)
-
-    @raises(AttributeError)
-    def test_hyperparameters_not_set(self):
-        self.bpl.logprior
-
-
-    def test_hyperparameters(self):
-        #hyperparameters
-        hyperpars = {"alpha1_min":1.0, "alpha1_max":5.0,
-                     "alpha2_min":1.0, "alpha2_max":5.0,
-                     "x_break_min": -2.0, "x_break_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.bpl.set_prior(hyperpars)
-        self.bpl.logprior(2.0, 2.0, 0.0, 1.0)
-
-    def test_prior_works(self):
-        hyperpars = {"alpha1_min":1.0, "alpha1_max":5.0,
-                     "alpha2_min":1.0, "alpha2_max":5.0,
-                     "x_break_min": -2.0, "x_break_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.bpl.set_prior(hyperpars)
-        prior_test = self.bpl.logprior(2.0, 2.0, 0.0, 1.0)
-        print("prior_test: " + str(prior_test))
-        assert np.isfinite(prior_test)
-        assert prior_test > logmin
-
-        prior_test = self.bpl.logprior(-1.0, 2.0, 0.0, 1.0)
-        assert prior_test == logmin
-
-        prior_test = self.bpl.logprior(2.0, 6.0, 0.0, 1.0)
-        assert prior_test == logmin
-
-        prior_test = self.bpl.logprior(2.0, 2.0, -3.0, 1.0)
-        assert prior_test == logmin
-
-        prior_test = self.bpl.logprior(2.0, 2.0, 0.0, 10.0)
-        assert prior_test == logmin
-
-
-    @raises(AssertionError)
-    def test_nonfinite_pars_fails_prior(self):
-        hyperpars = {"alpha1_min":1.0, "alpha1_max":5.0,
-                     "alpha2_min":1.0, "alpha2_max":5.0,
-                     "x_break_min": -2.0, "x_break_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.bpl.set_prior(hyperpars)
-        for alpha1 in [2.0, np.nan, np.inf]:
-            for alpha2 in [np.inf, np.nan]:
-                for x_break in [2.0, np.nan, np.inf]:
-                    for amplitude in [np.inf, np.nan]:
-                        self.bpl.logprior(alpha1, alpha2, x_break, amplitude)
-
-
-
-    @raises(AssertionError)
-    def test_func_fails_when_not_finite(self):
-        for alpha1 in [2.0, np.nan, np.inf]:
-            for alpha2 in [np.inf, np.nan]:
-                for x_break in [2.0, np.nan, np.inf]:
-                    for amplitude in [np.inf, np.nan]:
-                        self.bpl(self.x, alpha1, alpha2, x_break, amplitude)
-
-    @raises(AttributeError)
-    def test_hyperparameters_not_set(self):
-        self.bpl.logprior
-
-
-    def test_hyperparameters(self):
-        #hyperparameters
-        hyperpars = {"alpha1_min":1.0, "alpha1_max":5.0,
-                     "alpha2_min":1.0, "alpha2_max":5.0,
-                     "x_break_min": -2.0, "x_break_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.bpl.set_prior(hyperpars)
-        self.bpl.logprior(2.0, 2.0, 0.0, 1.0)
-
-    def test_prior_works(self):
-        hyperpars = {"alpha1_min":1.0, "alpha1_max":5.0,
-                     "alpha2_min":1.0, "alpha2_max":5.0,
-                     "x_break_min": -2.0, "x_break_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.bpl.set_prior(hyperpars)
-        prior_test = self.bpl.logprior(2.0, 2.0, 0.0, 1.0)
-        print("prior_test: " + str(prior_test))
-        assert np.isfinite(prior_test)
-        assert prior_test > logmin
-
-        prior_test = self.bpl.logprior(-1.0, 2.0, 0.0, 1.0)
-        assert prior_test == logmin
-
-        prior_test = self.bpl.logprior(2.0, 6.0, 0.0, 1.0)
-        assert prior_test == logmin
-
-        prior_test = self.bpl.logprior(2.0, 2.0, -3.0, 1.0)
-        assert prior_test == logmin
-
-        prior_test = self.bpl.logprior(2.0, 2.0, 0.0, 10.0)
-        assert prior_test == logmin
-
-
-    @raises(AssertionError)
-    def test_nonfinite_pars_fails_prior(self):
-        hyperpars = {"alpha1_min":1.0, "alpha1_max":5.0,
-                     "alpha2_min":1.0, "alpha2_max":5.0,
-                     "x_break_min": -2.0, "x_break_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.bpl.set_prior(hyperpars)
-        for alpha1 in [2.0, np.nan, np.inf]:
-            for alpha2 in [np.inf, np.nan]:
-                for x_break in [2.0, np.nan, np.inf]:
-                    for amplitude in [np.inf, np.nan]:
-                        self.bpl.logprior(alpha1, alpha2, x_break, amplitude)
-
 
 
 class TestLorentzianModel(object):
@@ -392,7 +262,6 @@ class TestLorentzianModel(object):
         c = self.lorentzian(self.x, x0, gamma, amplitude)
         assert c.shape == self.x.shape
 
-
     def test_value(self):
         gamma = 1.0
         amplitude = 2.0
@@ -400,7 +269,6 @@ class TestLorentzianModel(object):
 
         qpo_func = lambda x, g, amp, cen: np.exp(amp)/(np.pi*np.exp(g))*0.5/\
                                           ((x-cen)**2.0+(0.5*np.exp(g))**2.0)
-
 
         for x in range(1, 20):
             assert np.allclose(qpo_func(x, gamma, amplitude, x0),
@@ -433,19 +301,6 @@ class TestLorentzianModel(object):
                 for x0 in [2.0, np.nan, np.inf]:
                     self.lorentzian(self.x, x0, gamma, amplitude)
 
-    @raises(AttributeError)
-    def test_hyperparameters_not_set(self):
-        self.lorentzian.logprior
-
-    def test_hyperparameters(self):
-        #hyperparameters
-        hyperpars = {"x0_min":1.0, "x0_max":5.0,
-                     "gamma_min":-2.0, "gamma_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.lorentzian.set_prior(hyperpars)
-        self.lorentzian.logprior(2.0, -1.0, 1.0)
-
-
     def test_prior_works(self):
         hyperpars = {"x0_min":1.0, "x0_max":5.0,
                      "gamma_min":-2.0, "gamma_max":2.0,
@@ -463,7 +318,6 @@ class TestLorentzianModel(object):
 
         prior_test = self.lorentzian.logprior(2.0, -1.0, -10.0)
         assert prior_test == logmin
-
 
     @raises(AssertionError)
     def test_nonfinite_pars_fails_prior(self):
@@ -495,7 +349,6 @@ class TestFixedCentroidLorentzianModel(object):
 
         c = self.fcl(self.x, gamma, amplitude)
         assert c.shape == self.x.shape
-
 
     def test_value(self):
         gamma = 1.0
@@ -518,7 +371,7 @@ class TestFixedCentroidLorentzianModel(object):
 
     @raises(AttributeError)
     def test_hyperparameters_not_set(self):
-        self.fcl.logprior
+        self.fcl.logprior()
 
     def test_hyperparameters(self):
         #hyperparameters
@@ -526,7 +379,6 @@ class TestFixedCentroidLorentzianModel(object):
                      "amplitude_min":-5.0, "amplitude_max":5.0}
         self.fcl.set_prior(hyperpars)
         self.fcl.logprior(-1.0, 1.0)
-
 
     def test_prior_works(self):
         hyperpars = {"gamma_min":-2.0, "gamma_max":2.0,
@@ -543,7 +395,6 @@ class TestFixedCentroidLorentzianModel(object):
         prior_test = self.fcl.logprior(1.0, 10.0)
         assert prior_test == logmin
 
-
     @raises(AssertionError)
     def test_nonfinite_pars_fails_prior(self):
         hyperpars = {"gamma_min":-2.0, "gamma_max":2.0,
@@ -552,117 +403,6 @@ class TestFixedCentroidLorentzianModel(object):
         for gamma in [np.inf, np.nan]:
             for amplitude in [np.inf, np.nan]:
                 self.fcl.logprior(gamma, amplitude)
-
-
-
-## TODO: Need to write tests for PowerLawConst and BrokenPowerLawConst
-
-    def test_prior_works(self):
-        hyperpars = {"x0_min":1.0, "x0_max":5.0,
-                     "gamma_min":-2.0, "gamma_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.lorentzian.set_prior(hyperpars)
-        prior_test = self.lorentzian.logprior(2.0, -1.0, 1.0)
-        print("prior_test: " + str(prior_test))
-        assert np.isfinite(prior_test)
-        assert prior_test > logmin
-
-        prior_test = self.lorentzian.logprior(-1.0, -1.0, 1.0)
-        assert prior_test == logmin
-
-        prior_test = self.lorentzian.logprior(2.0, 3.0, 1.0)
-        assert prior_test == logmin
-
-        prior_test = self.lorentzian.logprior(2.0, -1.0, -10.0)
-        assert prior_test == logmin
-
-
-    @raises(AssertionError)
-    def test_nonfinite_pars_fails_prior(self):
-        hyperpars = {"x0_min":1.0, "x0_max":5.0,
-                     "gamma_min":-2.0, "gamma_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.lorentzian.set_prior(hyperpars)
-        for x0 in [2.0, np.nan, np.inf]:
-            for gamma in [np.inf, np.nan]:
-                for amplitude in [np.inf, np.nan]:
-                    self.lorentzian.logprior(x0, gamma, amplitude)
-
-
-class TestFixedCentroidLorentzianModel(object):
-
-    def setUp(self):
-        self.x = np.linspace(0.1, 10., 100)
-        self.x0 = 10.0
-        self.fcl = FixedCentroidLorentzian(x0=self.x0)
-
-    @raises(AssertionError)
-    def test_x0_is_finite(self):
-        for x0 in [np.nan, np.inf, -np.inf]:
-            fcl = FixedCentroidLorentzian(x0)
-
-    def test_shape(self):
-        gamma = 1.0
-        amplitude = 2.0
-
-        c = self.fcl(self.x, gamma, amplitude)
-        assert c.shape == self.x.shape
-
-
-    def test_value(self):
-        gamma = 1.0
-        amplitude = 2.0
-
-        qpo_func = lambda x, g, amp, cen: (np.exp(amp)/np.pi)*0.5*np.exp(g)/\
-                                          ((x-cen)**2.0+(0.5*np.exp(g))**2.0)
-        for x in range(1, 20):
-            assert np.allclose(qpo_func(x, gamma, amplitude, self.x0),
-                               self.fcl(x, gamma, amplitude),
-                               atol=1.e-10)
-
-    @raises(AssertionError)
-    def test_func_fails_when_not_finite(self):
-        for gamma in [2.0, np.nan, np.inf]:
-            for amplitude in [np.inf, np.nan]:
-                    self.fcl(self.x, gamma, amplitude)
-
-    @raises(AttributeError)
-    def test_hyperparameters_not_set(self):
-        self.fcl.logprior
-
-    def test_hyperparameters(self):
-        #hyperparameters
-        hyperpars = {"gamma_min":-2.0, "gamma_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.fcl.set_prior(hyperpars)
-        self.fcl.logprior(-1.0, 1.0)
-
-
-    def test_prior_works(self):
-        hyperpars = {"gamma_min":-2.0, "gamma_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.fcl.set_prior(hyperpars)
-
-        prior_test = self.fcl.logprior(-1.0, 1.0)
-        assert np.isfinite(prior_test)
-        assert prior_test > logmin
-
-        prior_test = self.fcl.logprior(-3.0, 1.0)
-        assert prior_test == logmin
-
-        prior_test = self.fcl.logprior(1.0, 10.0)
-        assert prior_test == logmin
-
-
-    @raises(AssertionError)
-    def test_nonfinite_pars_fails_prior(self):
-        hyperpars = {"gamma_min":-2.0, "gamma_max":2.0,
-                     "amplitude_min":-5.0, "amplitude_max":5.0}
-        self.fcl.set_prior(hyperpars)
-        for gamma in [np.inf, np.nan]:
-            for amplitude in [np.inf, np.nan]:
-                self.fcl.logprior(gamma, amplitude)
-
 
 
 ## TODO: Need to write tests for PowerLawConst and BrokenPowerLawConst
@@ -671,21 +411,17 @@ class TestCombinedModels(object):
 
     def setUp(self):
         self.x = np.arange(1000)
-
-
         ## number of parameters for the different models
         self.npar_const = 1
         self.npar_powerlaw = 2
         self.npar_bentpowerlaw = 4
         self.npar_lorentzian = 3
 
-
     def npar_equal(self, model1, model2):
         mod = CombinedModel([model1, model2])
         npar_model1 = self.__getattribute__("npar_"+mod.name[0])
         npar_model2 = self.__getattribute__("npar_"+mod.name[1])
         eq_(mod.npar, npar_model1+npar_model2)
-
 
     def test_model(self):
         models = [Const,
@@ -696,7 +432,6 @@ class TestCombinedModels(object):
         for m1 in models:
             for m2 in models:
                 self.npar_equal(m1, m2)
-
 
 
 class TestConstPrior(object):
@@ -712,7 +447,6 @@ class TestConstPrior(object):
     def test_prior_zero(self):
         a = 100.0
         assert self.const.logprior(a) == logmin
-
 
 
 class TestPowerlawPrior(object):
@@ -742,7 +476,6 @@ class TestPowerlawPrior(object):
         amplitude_all = [-20.0, 2.0]
         for alpha, amplitude in zip(alpha_all, amplitude_all):
             yield self.prior_zero, alpha, amplitude
-
 
 
 class TestBentPowerLawPrior(object):
@@ -797,8 +530,6 @@ class TestBentPowerLawPrior(object):
                             yield self.nonzero_prior, a1, amp, a2, br
 
 
-
-
 class TestLorentzianPrior(object):
 
     def setUp(self):
@@ -817,13 +548,11 @@ class TestLorentzianPrior(object):
         self.prior_norm = np.log(gamma_norm*amplitude_norm*x0_norm)
         self.lorentzian = Lorentzian(self.hyperpars)
 
-
     def zero_prior(self, gamma, amplitude, x0):
         assert self.lorentzian.logprior(x0, gamma, amplitude) == logmin
 
     def nonzero_prior(self, gamma, amplitude, x0):
         assert self.lorentzian.logprior(x0, gamma, amplitude) == self.prior_norm
-
 
     def test_prior(self):
 
@@ -839,6 +568,3 @@ class TestLorentzianPrior(object):
                         yield self.zero_prior, g, a, x
                     else:
                         yield self.nonzero_prior, g, a, x
-
-
-
