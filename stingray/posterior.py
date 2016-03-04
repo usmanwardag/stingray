@@ -6,7 +6,6 @@ from scipy.special import gamma as scipy_gamma
 
 ## TODO: Find out whether there is a gamma function in numpy!
 
-
 from stingray import Powerspectrum, AveragedPowerspectrum
 from stingray.parametricmodels import logmin
 
@@ -18,8 +17,6 @@ class Posterior(object):
 
 
         """
-
-
         self.x = x
         self.y = y
 
@@ -112,31 +109,8 @@ class PSDPosterior(Posterior):
                for a maximum likelihood-style analysis, no prior is required.
 
         """
-
         self.m = ps.m
-        Posterior.__init__(self,ps.freq, ps.ps, model)
-
-    def logprior(self, t0):
-        """
-        The logarithm of the prior distribution for the
-        model defined in self.model.
-
-        Parameters:
-        ------------
-        t0: {list | numpy.ndarray}
-            The list with parameters for the model
-
-        Returns:
-        --------
-        logp: float
-            The logarithm of the prior distribution for the model and
-            parameters given.
-        """
-        assert hasattr(self.model, "logprior")
-        assert np.size(t0) == self.model.npar, "Input parameters must " \
-                                               "match model parameters!"
-
-        return self.model.logprior(*t0)
+        Posterior.__init__(self, ps.freq, ps.ps, model)
 
     def loglikelihood(self, t0, neg=False):
         """
@@ -234,7 +208,6 @@ class LightcurvePosterior(Posterior):
         if np.isnan(res):
             res = logmin
         elif res == np.inf or np.isfinite(res) == False:
-
             res = logmin
 
         if neg:
@@ -290,5 +263,3 @@ class GaussianPosterior(Posterior):
             return -res
         else:
             return res
-
-

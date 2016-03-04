@@ -5,6 +5,7 @@ from nose.tools import raises
 
 from stingray import Lightcurve
 from stingray import Powerspectrum, AveragedPowerspectrum
+from stingray import range
 
 from stingray.powerspectrum import classical_pvalue
 
