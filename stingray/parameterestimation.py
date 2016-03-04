@@ -23,11 +23,6 @@ try:
 except ImportError:
     use_corner=False
 
-try:
-    import seaborn as sns
-    use_seaborn = True
-except ImportError:
-    use_seaborn = False
 
 #### GENERAL IMPORTS ###
 import numpy as np

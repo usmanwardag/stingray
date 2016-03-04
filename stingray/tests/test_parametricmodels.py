@@ -398,8 +398,10 @@ class TestLorentzianModel(object):
         amplitude = 2.0
         x0 = 200.0
 
-        qpo_func = lambda x, g, amp, cen: (np.exp(amp)/np.pi)*0.5*np.exp(g)/\
+        qpo_func = lambda x, g, amp, cen: np.exp(amp)/(np.pi*np.exp(g))*0.5/\
                                           ((x-cen)**2.0+(0.5*np.exp(g))**2.0)
+
+
         for x in range(1, 20):
             assert np.allclose(qpo_func(x, gamma, amplitude, x0),
                                self.lorentzian(x, x0, gamma, amplitude),
@@ -450,7 +452,6 @@ class TestLorentzianModel(object):
                      "amplitude_min":-5.0, "amplitude_max":5.0}
         self.lorentzian.set_prior(hyperpars)
         prior_test = self.lorentzian.logprior(2.0, -1.0, 1.0)
-        print("prior_test: " + str(prior_test))
         assert np.isfinite(prior_test)
         assert prior_test > logmin
 
@@ -500,12 +501,14 @@ class TestFixedCentroidLorentzianModel(object):
         gamma = 1.0
         amplitude = 2.0
 
-        qpo_func = lambda x, g, amp, cen: (np.exp(amp)/np.pi)*0.5*np.exp(g)/\
+        qpo_func = lambda x, g, amp, cen: np.exp(amp)/(np.pi*np.exp(g))*0.5/\
                                           ((x-cen)**2.0+(0.5*np.exp(g))**2.0)
         for x in range(1, 20):
+            print(qpo_func(x, gamma, amplitude, self.x0))
+            print(self.fcl(x, gamma, amplitude))
             assert np.allclose(qpo_func(x, gamma, amplitude, self.x0),
                                self.fcl(x, gamma, amplitude),
-                               atol=1.e-10)
+                               atol=1.e-6)
 
     @raises(AssertionError)
     def test_func_fails_when_not_finite(self):
