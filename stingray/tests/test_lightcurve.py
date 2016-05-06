@@ -357,6 +357,7 @@ class TestLightcurve(object):
         lc.write('lc.pickle')
         lc.read('lc.pickle')
         assert np.all(lc.time == self.times)
+        os.remove('lc.pickle')
 
 class TestLightcurveRebin(object):
 
