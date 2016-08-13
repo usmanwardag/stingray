@@ -17,6 +17,7 @@ from .utils import order_list_of_arrays, is_string
 from .utils import assign_value_if_none
 
 from .gti import  _get_gti_from_extension, load_gtis
+from .fitsdb import load_events
 
 try:
     # Python 2
@@ -625,7 +626,7 @@ def _save_fits_object(object, filename, **kwargs):
             if isinstance(data, np.longdouble):
                 # Longdouble case. Split and save integer and float parts
                 data_I, data_F = split_numbers(data)
-                names = [attr+'_I', attr+'_F'] 
+                names = [attr+'I', attr+'F'] 
                 hdrs[index][names[0]] = data_I
                 hdrs[index][names[1]] = data_F
             else:
@@ -638,7 +639,7 @@ def _save_fits_object(object, filename, **kwargs):
                 if isinstance(data[0], np.longdouble):
                     # Longdouble case. Split and save integer and float parts
                     data_I, data_F= split_numbers(data)
-                    names = [attr+'_I', attr+'_F']
+                    names = [attr+'I', attr+'F']
                     cols[index].append(fits.Column(name=names[0],format='D', array=data_I))
                     cols[index].append(fits.Column(name=names[1],format='D', array=data_F))
                 else:
@@ -687,18 +688,25 @@ def _retrieve_fits_object(filename, **kwargs):
     """
 
     data = {}
+    cols = []
+    colsassign = {}
 
     if 'cols' in list(kwargs.keys()):
         cols = [col.upper() for col in kwargs['cols']]
-    else:
-        cols = []
 
     if 'colsassign' in list(kwargs.keys()):
         colsassign = kwargs['colsassign']
-        colsassign.update({k.upper(): v.upper() for k, v in colsassign.iteritems()})
-        iscolsassigned = True
-    else:
-        iscolsassigned = False
+        
+    mission = check_mission(filename)
+    # TODO: Find if fits file describe events, lightcurve or spectrum.
+    # nature = check_nature(filename)
+
+    if mission is not None:
+        colsassign = load_events(mission)
+        cols = colsassign.keys()
+
+    # Change keys of colsassign to uppercase
+    colsassign.update({k.upper(): v.upper() for k, v in colsassign.iteritems()})
 
     with fits.open(filename) as hdulist:
         # Get all table names
@@ -706,7 +714,7 @@ def _retrieve_fits_object(filename, **kwargs):
 
         for c in cols:
             # Get the index of table to which column belongs
-            if iscolsassigned and c in colsassign.keys():
+            if c in colsassign.keys():
                 index = tables.index(colsassign[c])
             else:
                 index = 1
@@ -719,17 +727,17 @@ def _retrieve_fits_object(filename, **kwargs):
             hdr_keys = [h.upper() for h in hdulist[index].header.keys()]
 
             # Longdouble case: check if data is in fits columns
-            if c+'_I' in fits_cols or c+'_F' in fits_cols:
+            if c+'I' in fits_cols or c+'F' in fits_cols:
                 # Check for repetition
                 if c not in data.keys():
-                    data[c] = np.longdouble(hdulist[index].data[c+'_I'])
-                    data[c] += np.longdouble(hdulist[index].data[c+'_F'])
+                    data[c] = np.longdouble(hdulist[index].data[c+'I'])
+                    data[c] += np.longdouble(hdulist[index].data[c+'F'])
 
             # Longdouble case: check if data is in headers
-            elif c+'_I' in hdr_keys or c+'_F' in hdr_keys:
+            elif c+'I' in hdr_keys or c+'F' in hdr_keys:
                 if c not in data.keys():
-                    data[c] = np.longdouble(hdulist[index].header[c+'_I'])
-                    data[c] += np.longdouble(hdulist[index].header[c+'_F'])
+                    data[c] = np.longdouble(hdulist[index].header[c+'I'])
+                    data[c] += np.longdouble(hdulist[index].header[c+'F'])
 
             # Normal case: check if data is in fits columns
             elif c in fits_cols:
@@ -740,6 +748,19 @@ def _retrieve_fits_object(filename, **kwargs):
                 data[c] = hdulist[index].header[c]
 
     return data
+
+def check_mission(filename):
+    """Check mission of a fits file."""
+    
+    mission = None
+
+    with fits.open(filename) as hdulist:
+        hdr = hdulist[0].header
+        
+        if 'TELESCOP' in hdr:
+            mission = hdr['TELESCOP']
+
+    return mission
 
 def _lookup_format(var):
     """Looks up relevant format in fits."""

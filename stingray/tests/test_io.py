@@ -212,6 +212,11 @@ class TestFileFormats(object):
         del rec_object
         os.remove('test.fits')
 
+    def test_events_mission_read(self):
+        """Read an events mission fits file."""
+        fname = os.path.join(datadir, 'monol_testA.evt')
+        read(fname, 'fits')
+
     def test_savefig_matplotlib_not_installed(self):
         from ..io import savefig
         try:
