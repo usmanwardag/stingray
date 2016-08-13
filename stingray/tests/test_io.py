@@ -197,9 +197,10 @@ class TestFileFormats(object):
 
     def test_fits_data_recovery(self):
         test_object = TestIOReadWrite()
-        write(test_object, 'test.fits', 'fits')
+        write(test_object, 'test.fits', 'fits', tnames=['EVENTS', 'GTI'],
+            colsassign={'number':'GTI', 'array':'GTI'})
         rec_object = read('test.fits', 'fits', cols = ['number', 'str', 'list',
-            'array','long_array','long_number'])
+            'array','long_array','long_number'], colsassign={'number':'GTI', 'array':'GTI'})
 
         assert rec_object['NUMBER'] == test_object.number
         assert rec_object['STR'] == test_object.str

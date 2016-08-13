@@ -592,8 +592,8 @@ def _save_fits_object(object, filename, **kwargs):
         to. If this is None or if a column is not provided, it/they will
         be assigned to the first table.
 
-        For example, [{'gti':'GTI'}] indicates that gti values should be 
-        stored in GTI table.
+        For example, [{'TSTART':'GTI', 'TSTOP':'GTI'}] indicates that TSTART 
+        and TSTOP should be stored in GTI table.
     """
 
     tables = []
@@ -661,7 +661,7 @@ def _save_fits_object(object, filename, **kwargs):
 
     # Create binary tables
     for i in range(0, len(tables)):
-        if cols[i] != []:
+        if cols[i] != [] :
             tbhdu.append(fits.BinTableHDU.from_columns(cols[i], header=hdrs[i], name=tables[i]))
     
     tbhdu.writeto(filename)
@@ -680,6 +680,14 @@ def _retrieve_fits_object(filename, **kwargs):
     cols: str iterable
         The names of columns to extract from fits tables.
 
+    colsassign: dictionary iterable
+        This indicates the correct tables to which to assign columns
+        to. If this is None or if a column is not provided, the column will
+        be retrieved from the default(first) table.
+
+        For example, [{'TSTART':'GTI', 'TSTOP':'GTI'}] indicates that TSTART 
+        and TSTOP should be retrieved from GTI table. 
+
     Returns
     -------
     data: dictionary
@@ -694,37 +702,51 @@ def _retrieve_fits_object(filename, **kwargs):
     else:
         cols = []
 
-    with fits.open(filename) as hdulist:
-        fits_cols = []
+    if 'colsassign' in list(kwargs.keys()):
+        colsassign = kwargs['colsassign']
+        colsassign.update({k.upper(): v.upper() for k, v in colsassign.iteritems()})
+        iscolsassigned = True
+    else:
+        iscolsassigned = False
 
-        # Get columns from all tables
-        for i in range(1,len(hdulist)):
-            fits_cols.append([h.upper() for h in hdulist[i].data.names])
+    with fits.open(filename) as hdulist:
+        # Get all table names
+        tables = [hdu.name for hdu in hdulist]
 
         for c in cols:
-            for i in range(0, len(fits_cols)):
-                # .upper() is used because `fits` stores values in upper case
-                hdr_keys = [h.upper() for h in hdulist[i+1].header.keys()]
+            # Get the index of table to which column belongs
+            if iscolsassigned and c in colsassign.keys():
+                index = tables.index(colsassign[c])
+            else:
+                index = 1
 
-                # Longdouble case. Check for columns
-                if c+'_I' in fits_cols[i] or c+'_F' in fits_cols[i]:
-                    if c not in data.keys():
-                        data[c] = np.longdouble(hdulist[i+1].data[c+'_I'])
-                        data[c] += np.longdouble(hdulist[i+1].data[c+'_F'])
+            # Get all columns in the table. .upper() is used because `fits`
+            # generally stores values in upper case
+            fits_cols = [h.upper() for h in hdulist[index].data.names]
 
-                # Longdouble case. Check for header keys
-                if c+'_I' in hdr_keys or c+'_F' in hdr_keys:
-                    if c not in data.keys():
-                        data[c] = np.longdouble(hdulist[i+1].header[c+'_I'])
-                        data[c] += np.longdouble(hdulist[i+1].header[c+'_F'])
+            # Get all header keys in table.
+            hdr_keys = [h.upper() for h in hdulist[index].header.keys()]
 
-                # Normal case. Check for columns
-                elif c in fits_cols[i]:
-                    data[c] = hdulist[i+1].data[c]
+            # Longdouble case: check if data is in fits columns
+            if c+'_I' in fits_cols or c+'_F' in fits_cols:
+                # Check for repetition
+                if c not in data.keys():
+                    data[c] = np.longdouble(hdulist[index].data[c+'_I'])
+                    data[c] += np.longdouble(hdulist[index].data[c+'_F'])
 
-                # Normal case. Check for header keys
-                elif c in hdr_keys:
-                    data[c] = hdulist[i+1].header[c]
+            # Longdouble case: check if data is in headers
+            elif c+'_I' in hdr_keys or c+'_F' in hdr_keys:
+                if c not in data.keys():
+                    data[c] = np.longdouble(hdulist[index].header[c+'_I'])
+                    data[c] += np.longdouble(hdulist[index].header[c+'_F'])
+
+            # Normal case: check if data is in fits columns
+            elif c in fits_cols:
+                data[c] = hdulist[index].data[c]
+
+            # Normal case: check if data is in headers
+            elif c in hdr_keys:
+                data[c] = hdulist[index].header[c]
 
     return data
 
