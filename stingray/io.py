@@ -309,8 +309,7 @@ def common_name(str1, str2, default='common'):
     return common_str
 
 def split_numbers(number):
-    """
-    Split high precision number(s) into doubles.
+    """Split high precision number(s) into doubles.
     TODO: Consider the option of using a third number to specify shift.
 
     Parameters
@@ -337,8 +336,7 @@ def split_numbers(number):
     return np.double(number_I), np.double(number_F)
 
 def _save_pickle_object(object, filename):
-    """
-    Save a class object in pickle format.
+    """Save a class object in pickle format.
 
     Parameters
     ----------
@@ -354,8 +352,7 @@ def _save_pickle_object(object, filename):
         pickle.dump(object, f)
 
 def _retrieve_pickle_object(filename):
-    """
-    Retrieves a pickled class object.
+    """Retrieves a pickled class object.
 
     Parameters
     ----------
@@ -371,8 +368,7 @@ def _retrieve_pickle_object(filename):
         return pickle.load(f)
 
 def _save_hdf5_object(object, filename):
-    """
-    Save a class object in hdf5 format.
+    """Save a class object in hdf5 format.
 
     Parameters
     ----------
@@ -416,8 +412,7 @@ def _save_hdf5_object(object, filename):
                     pass
 
 def _retrieve_hdf5_object(filename):
-    """
-    Retrieves an hdf5 format class object.
+    """Retrieves an hdf5 format class object.
 
     Parameters
     ----------
@@ -473,8 +468,7 @@ def _retrieve_hdf5_object(filename):
     return data
 
 def _save_ascii_object(object, filename, fmt="%.18e", **kwargs):
-    """
-    Save an array to a text file.
+    """Save an array to a text file.
 
     Parameters
     ----------
@@ -503,8 +497,7 @@ def _save_ascii_object(object, filename, fmt="%.18e", **kwargs):
     pass
 
 def _retrieve_ascii_object(filename, **kwargs):
-    """
-    Helper function to retrieve ascii objects from file.
+    """Helper function to retrieve ascii objects from file.
     Uses astropy.Table for reading and storing the data.
 
     Parameters
@@ -570,8 +563,7 @@ def _retrieve_ascii_object(filename, **kwargs):
         return data[cols]
 
 def _save_fits_object(object, filename, **kwargs):
-    """
-    Save a class object in fits format.
+    """Save a class object in fits format.
 
     Parameters
     ----------
@@ -667,8 +659,7 @@ def _save_fits_object(object, filename, **kwargs):
     tbhdu.writeto(filename)
 
 def _retrieve_fits_object(filename, **kwargs):
-    """
-    Retrieves a fits format class object.
+    """Retrieves a fits format class object.
 
     Parameters
     ----------
@@ -751,9 +742,7 @@ def _retrieve_fits_object(filename, **kwargs):
     return data
 
 def _lookup_format(var):
-    """
-    Looks up relevant format in fits.
-    """
+    """Looks up relevant format in fits."""
 
     lookup = {"<type 'int'>":"J", "<type 'float'>":"E", 
         "<type 'numpy.int64'>": "K", "<type 'numpy.float64'>":"D", 
@@ -769,9 +758,7 @@ def _lookup_format(var):
         return "D"
 
 def _isattribute(data):
-    """
-    Check if data is a single number or an array.
-    """
+    """Check if data is a single number or an array."""
 
     if isinstance(data, np.ndarray) or isinstance(data, list):
         return False
@@ -779,8 +766,7 @@ def _isattribute(data):
         return True
 
 def write(input_, filename, format_='pickle', **kwargs):
-    """
-    Pickle a class instance. For parameters depending on
+    """Pickle a class instance. For parameters depending on
     `format_`, see individual function definitions.
 
     Parameters
@@ -818,8 +804,7 @@ def write(input_, filename, format_='pickle', **kwargs):
         utils.simon('Format not understood.')
 
 def read(filename, format_='pickle', **kwargs):
-    """
-    Return a pickled class instance.
+    """Return a pickled class instance.
 
     Parameters
     ----------
@@ -857,8 +842,7 @@ def read(filename, format_='pickle', **kwargs):
         utils.simon('Format not understood.')
         
 def savefig(filename, **kwargs):
-    """
-    Save a figure plotted by Matplotlib.
+    """Save a figure plotted by Matplotlib.
 
     Note : This function is supposed to be used after the ``plot``
     function. Otherwise it will save a blank image with no plot.
