@@ -80,15 +80,11 @@ def _get_additional_data(lctable, additional_columns):
         for a in additional_columns:
             try:
                 additional_data[a] = np.array(lctable.field(a))
-            except:  # pragma: no cover
-                if a == 'PI':
-                    logging.warning('Column PI not found. Trying with PHA')
-                    additional_data[a] = np.array(lctable.field('PHA'))
-                else:
-                    raise Exception('Column' + a + 'not found')
+            except:  
+                # Additional column not found
+                pass
 
     return additional_data
-
 
 def load_events_and_gtis(fits_file, additional_columns=None,
                          gtistring='GTI,STDGTI',
@@ -127,8 +123,8 @@ def load_events_and_gtis(fits_file, additional_columns=None,
     # Load data table
     try:
         lctable = lchdulist[hduname].data
-    except:  # pragma: no cover
-        logging.warning('HDU %s not found. Trying first extension' % hduname)
+    except:  
+        util.simon('HDU %s not found. Trying first extension' % hduname)
         lctable = lchdulist[1].data
 
     # Read event list
@@ -137,8 +133,8 @@ def load_events_and_gtis(fits_file, additional_columns=None,
     # Read TIMEZERO keyword and apply it to events
     try:
         timezero = np.longdouble(lchdulist[1].header['TIMEZERO'])
-    except:  # pragma: no cover
-        logging.warning("No TIMEZERO in file")
+    except:  
+        # No TIMEZERO, using default
         timezero = np.longdouble(0.)
 
     ev_list += timezero
@@ -147,8 +143,8 @@ def load_events_and_gtis(fits_file, additional_columns=None,
     try:
         t_start = np.longdouble(lchdulist[1].header['TSTART'])
         t_stop = np.longdouble(lchdulist[1].header['TSTOP'])
-    except:  # pragma: no cover
-        logging.warning("Tstart and Tstop error. using defaults")
+    except:  
+        # No TSTART and TSTOP, using defaults
         t_start = ev_list[0]
         t_stop = ev_list[-1]
 
@@ -161,8 +157,8 @@ def load_events_and_gtis(fits_file, additional_columns=None,
             gti_list = \
                 _get_gti_from_extension(
                     lchdulist, accepted_gtistrings=accepted_gtistrings)
-        except:  # pragma: no cover
-            warnings.warn("No extensions found with a valid name. "
+        except:  
+            util.simon("No extensions found with a valid name. "
                           "Please check the `accepted_gtistrings` values.")
             gti_list = np.array([[t_start, t_stop]],
                                 dtype=np.longdouble)
@@ -171,28 +167,27 @@ def load_events_and_gtis(fits_file, additional_columns=None,
 
     additional_data = _get_additional_data(lctable, additional_columns)
 
-    lchdulist.close()
-
     # Sort event list
     order = np.argsort(ev_list)
     ev_list = ev_list[order]
 
     additional_data = order_list_of_arrays(additional_data, order)
 
-    returns = _empty()
-    returns.ev_list = ev_list
-    returns.gti_list = gti_list
-    returns.additional_data = additional_data
-    returns.t_start = t_start
-    returns.t_stop = t_stop
+    # Store data in a dictionary
+    data = {}
+    data['TIME'] = ev_list
+    data['GTI'] = gti_list
+    data['TSTART'] = t_start
+    data['TSTOP'] = t_stop
 
-    return returns
+    for k in additional_data.keys():
+        data[k] = additional_data[k]
 
+    return data
 
 class _empty():
     def __init__(self):
         pass
-
 
 def mkdir_p(path):  # pragma: no cover
     """Safe mkdir function.
@@ -223,7 +218,7 @@ def read_header_key(fits_file, key, hdu=1):
 
     Parameters
     ----------
-    fits_file: str
+    fits_file: hdulist
     key: str
         The keyword to be read
 
@@ -258,19 +253,11 @@ def ref_mjd(fits_file, hdu=1):
     hdu : int
     """
     import collections
-
-    if isinstance(fits_file, collections.Iterable) and\
-            not is_string(fits_file):  # pragma: no cover
-        fits_file = fits_file[0]
-        logging.info("opening %s" % fits_file)
-
-    hdulist = fits.open(fits_file)
-
+    
+    hdulist = fits_file
     ref_mjd_val = high_precision_keyword_read(hdulist[hdu].header, "MJDREF")
 
-    hdulist.close()
     return ref_mjd_val
-
 
 def common_name(str1, str2, default='common'):
     """Strip two strings of the letters not in common.
@@ -698,8 +685,8 @@ def _retrieve_fits_object(filename, **kwargs):
         header = hdulist[0].header
 
         if 'TELESCOP' in header:
-            data = load_events_and_gtis(hdulist)
-            print('Here')
+            data = load_events_and_gtis(hdulist, additional_columns=['PI', 'PHA'])
+            data['MJDREF'] = ref_mjd(hdulist)
 
         else:
             fits_cols = []

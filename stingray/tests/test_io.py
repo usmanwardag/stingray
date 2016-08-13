@@ -69,7 +69,8 @@ class TestIO(object):
     def test_read_mjdref(self):
         """Test event file reading."""
         fname = os.path.join(datadir, 'monol_testA.evt')
-        assert ref_mjd(fname) is not None
+        fits_file = fits.open(fname)
+        assert ref_mjd(fits_file) is not None
 
     def test_split_number(self):
         """Test split with high precision numbers."""
