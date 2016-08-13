@@ -4,6 +4,7 @@ import numpy as np
 import os
 
 from astropy.tests.helper import pytest
+from astropy.io import fits
 
 from ..io import read, write, split_numbers
 from ..io import ref_mjd
@@ -56,7 +57,8 @@ class TestIO(object):
     def test_event_file_read(self):
         """Test event file reading."""
         fname = os.path.join(datadir, 'monol_testA.evt')
-        load_events_and_gtis(fname, additional_columns=["PI"])
+        fits_file = fits.open(fname)
+        load_events_and_gtis(fits_file, additional_columns=["PI"])
 
     def test_read_header_key(self):
         """Test event file reading."""
@@ -210,6 +212,10 @@ class TestFileFormats(object):
 
         del rec_object
         os.remove('test.fits')
+
+    def test_fits_with_mission_files(self):
+        fname = os.path.join(datadir, 'monol_testA.evt')
+        read(fname, 'fits')
 
     def test_savefig_matplotlib_not_installed(self):
         from ..io import savefig

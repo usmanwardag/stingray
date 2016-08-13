@@ -102,7 +102,7 @@ def load_events_and_gtis(fits_file, additional_columns=None,
 
     Parameters
     ----------
-    fits_file : str
+    fits_file : hdulist
     return_limits: bool, optional
         Return the TSTART and TSTOP keyword values
     additional_columns: list of str, optional
@@ -122,7 +122,7 @@ def load_events_and_gtis(fits_file, additional_columns=None,
     """
 
     gtistring = assign_value_if_none(gtistring, 'GTI,STDGTI')
-    lchdulist = fits.open(fits_file)
+    lchdulist = fits_file
 
     # Load data table
     try:
@@ -695,36 +695,43 @@ def _retrieve_fits_object(filename, **kwargs):
         cols = []
 
     with fits.open(filename) as hdulist:
-        fits_cols = []
+        header = hdulist[0].header
 
-        # Get columns from all tables
-        for i in range(1,len(hdulist)):
-            fits_cols.append([h.upper() for h in hdulist[i].data.names])
+        if 'TELESCOP' in header:
+            data = load_events_and_gtis(hdulist)
+            print('Here')
 
-        for c in cols:
-            for i in range(0, len(fits_cols)):
-                # .upper() is used because `fits` stores values in upper case
-                hdr_keys = [h.upper() for h in hdulist[i+1].header.keys()]
+        else:
+            fits_cols = []
 
-                # Longdouble case. Check for columns
-                if c+'_I' in fits_cols[i] or c+'_F' in fits_cols[i]:
-                    if c not in data.keys():
-                        data[c] = np.longdouble(hdulist[i+1].data[c+'_I'])
-                        data[c] += np.longdouble(hdulist[i+1].data[c+'_F'])
+            # Get columns from all tables
+            for i in range(1,len(hdulist)):
+                fits_cols.append([h.upper() for h in hdulist[i].data.names])
 
-                # Longdouble case. Check for header keys
-                if c+'_I' in hdr_keys or c+'_F' in hdr_keys:
-                    if c not in data.keys():
-                        data[c] = np.longdouble(hdulist[i+1].header[c+'_I'])
-                        data[c] += np.longdouble(hdulist[i+1].header[c+'_F'])
+            for c in cols:
+                for i in range(0, len(fits_cols)):
+                    # .upper() is used because `fits` stores values in upper case
+                    hdr_keys = [h.upper() for h in hdulist[i+1].header.keys()]
 
-                # Normal case. Check for columns
-                elif c in fits_cols[i]:
-                    data[c] = hdulist[i+1].data[c]
+                    # Longdouble case. Check for columns
+                    if c+'_I' in fits_cols[i] or c+'_F' in fits_cols[i]:
+                        if c not in data.keys():
+                            data[c] = np.longdouble(hdulist[i+1].data[c+'_I'])
+                            data[c] += np.longdouble(hdulist[i+1].data[c+'_F'])
 
-                # Normal case. Check for header keys
-                elif c in hdr_keys:
-                    data[c] = hdulist[i+1].header[c]
+                    # Longdouble case. Check for header keys
+                    if c+'_I' in hdr_keys or c+'_F' in hdr_keys:
+                        if c not in data.keys():
+                            data[c] = np.longdouble(hdulist[i+1].header[c+'_I'])
+                            data[c] += np.longdouble(hdulist[i+1].header[c+'_F'])
+
+                    # Normal case. Check for columns
+                    elif c in fits_cols[i]:
+                        data[c] = hdulist[i+1].data[c]
+
+                    # Normal case. Check for header keys
+                    elif c in hdr_keys:
+                        data[c] = hdulist[i+1].header[c]
 
     return data
 
